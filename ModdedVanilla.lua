@@ -14,6 +14,82 @@ Line 482, Castle 2 ------------ Shows the use of reset_game_globals and colour v
 --]]
 
 --Creates an atlas for cards to use
+
+
+SMODS.current_mod.extra_tabs = function()
+    local text_scale = 0.6
+    return {
+        {
+            label = G.localization.misc.dictionary.b_credits,
+            tab_definition_function = function()
+                return {
+                    n = G.UIT.ROOT,
+                    config = {r = 0.1, minw = 4, align = "tm", padding = 0.2, colour = G.C.BLACK},
+                    nodes = {
+                        {
+                            n = G.UIT.R,
+                            config = {align = "cm", padding = 0.05},
+                            nodes = {
+                                {n = G.UIT.T, config = {text = G.localization.misc.dictionary.b_credits, scale = text_scale, colour = G.C.ORANGE, shadow = true}},
+                            }
+                        },
+                        {
+                            n = G.UIT.R,
+                            config = {
+                                align = "cm",
+                                padding = 0.1,
+                                outline_colour = G.C.JOKER_GREY,
+                                r = 0.1,
+                                outline = 1,
+                                minw = 6,
+                                minh = 4,
+                            },
+                            nodes = {
+                                {
+                                    n = G.UIT.R,
+                                    config = {align = "tm", padding = 0},
+                                    nodes = {
+                                        {
+                                            n = G.UIT.C,
+                                            config = {align = "tl", padding = 0.05, minw = 2.0},
+                                            nodes = {
+                                                {
+                                                    n = G.UIT.R,
+                                                    config = {align = "cm", padding = 0},
+                                                    nodes = {
+                                                        {n = G.UIT.T, config = {text = 'Lead Dev and Artist: ', scale = text_scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}},
+                                                        {n = G.UIT.T, config = {text = '"Astral"', scale = text_scale, colour = G.C.ORANGE, shadow = true}},
+                                                    }
+                                                },
+                                                {
+                                                    n = G.UIT.R,
+                                                    config = {align = "cm", padding = 0},
+                                                    nodes = {
+                                                        {n = G.UIT.T, config = {text = 'Smudged Joker Art: ', scale = text_scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}},
+                                                        {n = G.UIT.T, config = {text = '"Astro :3"', scale = text_scale, colour = G.C.ORANGE, shadow = true}},
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            end
+        }
+    }
+end
+
+
+
+
+
+
+
+
+
 SMODS.Atlas {
 	-- Key for code to find it with
 	key = "ModdedVanilla",
@@ -33,6 +109,8 @@ SMODS.Sound{
 	key = 'bad_seal',
 	path = 'bad_seal.ogg'
 }
+
+
 
 
 SMODS.Seal {
@@ -66,6 +144,11 @@ SMODS.Seal {
 	end,
 }
 
+SMODS.Shader{
+	key = 'pixel',
+	path = 'pixel.fs'
+}
+
 SMODS.Joker {
 	key = 'useless',
 	loc_txt = {
@@ -76,7 +159,7 @@ SMODS.Joker {
 	},
 	    draw = function(self, card, layer)
         if card.config.center.discovered or card.bypass_discovery_center then
-            card.children.center:draw_shader('debuff', nil, card.ARGS.send_to_shader)
+			card.children.center:draw_shader('debuff', nil, card.ARGS.send_to_shader)
         end
     end,
 	config = { extra = { chips = 0, chip_gain = 15 } },
@@ -117,6 +200,309 @@ SMODS.Joker {
 		end
 	end
 }
+
+
+SMODS.Sound{
+	key = 'boom',
+	path = 'boom.ogg'
+}
+
+SMODS.Joker {
+	key = 'dwayne_egg',
+	loc_txt = {
+		name = 'Dwayne The Egg Johnson',
+		text = {
+			"After {E:2,C:attention}#1#{} more hand(s)",
+			"Something will happen"
+		}
+	},
+
+	config = { extra = { hands = 3, } },
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 6, y = 0 },
+	cost = 5,
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.hands } }
+	end,
+	calculate = function(self, card, context)
+		if context.after then
+			--card.juice_up()
+			card.ability.extra.hands = card.ability.extra.hands - 1
+		end
+
+
+		
+		if card.ability.extra.hands < 1 then
+			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+				play_sound('mvan_boom', 1, 0.55)
+				SMODS.destroy_cards(card)
+				SMODS.add_card {key = 'j_mvan_dwayne_egg_after', edition = card.edition, stickers = { 'eternal','pinned' } }
+				return {
+					message = "Egg.",
+					colour = G.C.RED
+				}
+			end}))
+		end
+
+
+	end
+}
+
+SMODS.Joker {
+	key = 'dwayne_egg_after',
+	loc_txt = {
+		name = 'Dwayne The Egg Johnson',
+		text = {
+			"EGG."
+		}
+	},
+
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 7, y = 0 },
+	cost = 5,
+
+	config = { extra = { } },
+	calculate = function(self, card, context)
+	end
+}
+
+
+
+SMODS.Joker {
+	key = 'wide',
+	loc_txt = {
+		name = 'Wide Joker',
+		text = {
+			"{X:mult,C:white} X#1# {} Mult if played hand contains more than 3 cards"
+		}
+	},
+	display_size = { w = 142, h = 95 },
+--	pixel_size = { w = 142, h = 95 },
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 11, y = 2 },
+	cost = 5,
+
+    config = { extra = { x_mult = 4, size = 3 } },
+	loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
+    end,
+	calculate = function(self, card, context)
+        if context.joker_main and #context.full_hand > card.ability.extra.size then
+            return {
+                x_mult = card.ability.extra.x_mult
+            }
+        end
+    end
+}
+
+SMODS.Joker {
+	key = 'astral',
+	loc_txt = {
+		name = 'Astral Joker',
+		text = {
+			"test"
+		}
+	},
+
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 8, y = 1 },
+	cost = 5,
+
+    config = { extra = { x_mult = 4, size = 3 } },
+	loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
+    end,
+	calculate = function(self, card, context)
+        if context.joker_main then
+			
+        end
+    end
+}
+
+SMODS.Joker {
+	key = 'chicken',
+	loc_txt = {
+		name = 'Chicken Sandwich',
+		text = {
+			"test"
+		}
+	},
+
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 8, y = 1 },
+	cost = 5,
+
+	config = { extra = { x_mult = 4, size = 3 } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
+	end,
+	calculate = function(self, card, context)
+		if context.before and context.main_eval and not context.blueprint then
+			local l_joker, r_joker = nil, nil
+
+			for i = 1, #G.jokers.cards do
+				if G.jokers.cards[i] == card then
+					if i > 1 then l_joker = G.jokers.cards[i - 1] end
+					if i < #G.jokers.cards then r_joker = G.jokers.cards[i + 1] end
+					break
+				end
+			end
+
+			if l_joker and l_joker.config.center_key ~= 'j_mvan_chicken' then
+				l_joker:set_ability('j_mvan_chicken')
+			end
+			if r_joker and r_joker.config.center_key ~= 'j_mvan_chicken' then
+				r_joker:set_ability('j_mvan_chicken')
+			end
+		end
+
+	end
+
+
+}
+
+SMODS.Joker {
+	key = 'smudged',
+	loc_txt = {
+		name = 'Smudged Joker',
+		text = {
+			"All {E:2,C:attention}face{} cards",
+			"act as the same rank"
+		}
+	},
+
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 9, y = 1 },
+	cost = 5,
+
+    locked_loc_vars = function(self, info_queue, card)
+        return { vars = { 3, localize { type = 'name_text', key = 'm_wild', set = 'Enhanced' } } }
+    end,
+    check_for_unlock = function(self, args)
+        if args.type == 'modify_deck' then
+            local count = 0
+            for _, playing_card in ipairs(G.playing_cards or {}) do
+                if SMODS.has_enhancement(playing_card, 'm_wild') then count = count + 1 end
+                if count >= 3 then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+
+}
+
+
+
+
+
+
+SMODS.Joker {
+	key = 'nuclear',
+	loc_txt = {
+		name = 'Nuclear Joker',
+		text = {
+			"EGG."
+		}
+	},
+
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 10, y = 0 },
+	cost = 5,
+
+    config = { extra = { Xmult_gain = 0.2, Xmult = 1 } },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.Xmult_gain, card.ability.extra.Xmult } }
+    end,
+calculate = function(self, card, context)
+    if context.before and context.main_eval and not context.blueprint then
+        local scoring_name = context.scoring_name
+        local scoring_played = (G.GAME.hands[scoring_name].played or 0) - 1
+
+        local least_played = math.huge
+        local tied_least = {}
+
+        for k, v in pairs(G.GAME.hands) do
+            if v.visible then
+                local played = v.played or 0
+                if k == scoring_name then played = scoring_played end
+
+                if played < least_played then
+                    least_played = played
+                    tied_least = {k}
+                elseif played == least_played then
+                    table.insert(tied_least, k)
+                end
+            end
+        end
+
+        G.GAME.current_round.least_played_poker_hands = tied_least
+
+        local is_least = false
+        for _, name in ipairs(tied_least) do
+            if name == scoring_name then
+                is_least = true
+                break
+            end
+        end
+
+        local l_joker, r_joker = nil, nil
+        for i = 1, #G.jokers.cards do
+            if G.jokers.cards[i] == card then
+                if i > 1 then l_joker = G.jokers.cards[i - 1] end
+                if i < #G.jokers.cards then r_joker = G.jokers.cards[i + 1] end
+                break
+            end
+        end
+
+        if is_least then
+            local destroyed = false
+
+            if l_joker then
+                SMODS.destroy_cards(l_joker)
+                destroyed = true
+            end
+            if r_joker then
+                SMODS.destroy_cards(r_joker)
+                destroyed = true
+            end
+
+            if destroyed then
+                play_sound('mvan_ah', 1, 0.55)
+                return {
+                    message = "Boom! Neighboring Joker(s) Destroyed!"
+                }
+            else
+                return {
+                    message = "No Neighboring Jokers to Destroy!"
+                }
+            end
+        end
+    end
+end
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
 
 
 SMODS.Sound{
@@ -267,60 +653,121 @@ SMODS.Seal {
 
 
 SMODS.Consumable {
-    set = "Tarot",
-    key = "bacon",
-    loc_vars = function(self, info_queue, card)
-        -- Handle creating a tooltip with seal args.
-        info_queue[#info_queue+1] = G.P_SEALS[(card.ability or self.config).extra]
-        -- Description vars
-        return {vars = {(card.ability or self.config).max_highlighted}}
-    end,
-    loc_txt = {
-        name = 'Unlimited Bacon',
-        text = {
+	set = "Tarot",
+	key = "bacon",
+	loc_vars = function(self, info_queue, card)
+		-- Handle creating a tooltip with seal args.
+		info_queue[#info_queue+1] = G.P_SEALS[(card.ability or self.config).extra]
+		-- Description vars
+		return {vars = {(card.ability or self.config).max_highlighted}}
+	end,
+	loc_txt = {
+		name = 'Unlimited Bacon',
+		text = {
 			"but no more games?"
-        }
-    },
-    cost = 4,
-    atlas = "ModdedVanilla",
-    pos = {x=2, y=1},
+		}
+	},
+	cost = 4,
+	atlas = "ModdedVanilla",
+	pos = {x=2, y=1},
 
-use = function(self, card, area, copier)
-    play_sound('timpani')
-
-
-    for n = 1, 60 do
-    local delay = math.max(0.05, 0.4 - n * 0.01)
-    G.E_MANAGER:add_event(Event({
-        trigger = 'after',
-        delay = delay,
-        func = function()
-			SMODS.add_card{key = "c_mvan_bacon"}
-            return true
-        end
-    }))end
+	use = function(self, card, area, copier)
+		play_sound('timpani')
 
 
-    G.E_MANAGER:add_event(Event({
-        trigger = 'after',
-        delay = 0.4,
-        func = function()
-
-            card:juice_up(0.3, 0.5)
-
-			error("Bacon = Infinity, Ruh Roh",0)
-			return true
-        end
-    }))
-
-    delay(30 * 0.4 + 0.2)
-end,
+		for n = 1, 60 do
+			local delay = math.max(0.05, 0.4 - n * 0.01)
+			G.E_MANAGER:add_event(Event({
+				trigger = 'after',
+				delay = delay,
+				func = function()
+					SMODS.add_card{key = "c_mvan_bacon"}
+					return true
+				end
+			}))end
 
 
+		G.E_MANAGER:add_event(Event({
+			trigger = 'after',
+			delay = 0.4,
+			func = function()
 
-    can_use = function(self, card)
-        return G.jokers and #G.jokers.cards < G.jokers.config.card_limit
-    end
+				card:juice_up(0.3, 0.5)
+
+				error("Bacon = Infinity, Ruh Roh",0)
+				return true
+			end
+		}))
+
+		delay(30 * 0.4 + 0.2)
+	end,
+
+
+
+	can_use = function(self, card)
+		return G.jokers and #G.jokers.cards < G.jokers.config.card_limit
+	end
+}
+
+
+
+
+
+SMODS.Consumable {
+	set = "Spectral",
+	key = "steal",
+	loc_vars = function(self, info_queue, card)
+		-- Handle creating a tooltip with seal args.
+		info_queue[#info_queue+1] = G.P_SEALS[(card.ability or self.config).extra]
+		-- Description vars
+		return {vars = {(card.ability or self.config).max_highlighted}}
+	end,
+	loc_txt = {
+		name = 'Steal',
+		text = {
+			"\"damn daniel back at it again with the white windowless vans.\""
+		}
+	},
+	cost = 4,
+	atlas = "ModdedVanilla",
+	pos = {x=12, y=2},
+
+	use = function(self, card, area, copier)
+		play_sound('timpani')
+
+
+		for n = 1, 60 do
+			local delay = math.max(0.05, 0.4 - n * 0.01)
+			G.E_MANAGER:add_event(Event({
+				trigger = 'after',
+				delay = delay,
+				func = function()
+					SMODS.add_card{key = "c_mvan_bacon"}
+					return true
+				end
+			}))end
+
+
+		G.E_MANAGER:add_event(Event({
+			trigger = 'after',
+			delay = 0.4,
+			func = function()
+
+				card:juice_up(0.3, 0.5)
+
+				error("Bacon = Infinity, Ruh Roh",0)
+				return true
+			end
+		}))
+
+		delay(30 * 0.4 + 0.2)
+	end,
+
+
+
+	can_use = function(self, card)
+		return G.jokers and #G.jokers.cards < G.jokers.config.card_limit
+	end
 }
 
 

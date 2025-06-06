@@ -5,7 +5,7 @@
     "description": "Adds Whatever I Want.",
     "prefix": "mvan",
     "main_file": "ModdedVanilla.lua",
-    "badge_colour": "c7638f",
+    "badge_colour": "fd5f55",
     "dependencies": [
         "Steamodded (>=1.0.0~ALPHA-1225a)"
     ],
