@@ -1,3 +1,0 @@
- - Add British Joker (Gains .02 XMult on scoring a King, Queen, or triggering Polychrome)
- - Add Nuclear Joker (Explodes Neighboring Jokers when played hand is least used poker hand)
- 

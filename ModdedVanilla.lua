@@ -157,11 +157,11 @@ SMODS.Joker {
 			"Buy it for the bit."
 		}
 	},
-	    draw = function(self, card, layer)
-        if card.config.center.discovered or card.bypass_discovery_center then
-			card.children.center:draw_shader('debuff', nil, card.ARGS.send_to_shader)
-        end
-    end,
+	draw = function(self, card, layer)
+		if card.config.center.discovered or card.bypass_discovery_center then
+			card.children.center:draw_shader('mvan_pixel', nil, card.ARGS.send_to_shader)
+		end
+	end,
 	config = { extra = { chips = 0, chip_gain = 15 } },
 	rarity = 1,
 	atlas = 'ModdedVanilla',
@@ -172,7 +172,55 @@ SMODS.Joker {
 	end,
 	calculate = function(self, card, context)
 
-        if context.before and context.main_eval and not context.blueprint then
+		if context.before and context.main_eval and not context.blueprint then
+
+			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+				for i,v in ipairs(context.scoring_hand) do
+					v:flip()
+				end
+				return true
+			end}))
+
+			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+				for i,v in ipairs(context.scoring_hand) do
+					v:set_seal('mvan_useless_seal', true)
+					play_sound('mvan_bad_seal', 1, 0.55)
+					v:juice_up()
+				end
+				return true
+			end}))
+
+			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+				for i,v in ipairs(context.scoring_hand) do
+					v:flip()
+				end
+				return true
+			end}))
+
+		end
+	end
+}
+
+SMODS.Joker {
+	key = '1-5th',
+	loc_txt = {
+		name = '1/5th Joker',
+		text = {
+			"Buy it for the bit."
+		}
+	},
+	config = { extra = { chips = 0, chip_gain = 15 } },
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 1, y = 0 },
+	pixel_size = { h = 71 },
+	cost = 5,
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.chips, card.ability.extra.chip_gain } }
+	end,
+	calculate = function(self, card, context)
+
+		if context.before and context.main_eval and not context.blueprint then
 
 			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
 				for i,v in ipairs(context.scoring_hand) do
