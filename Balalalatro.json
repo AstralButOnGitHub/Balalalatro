@@ -4,8 +4,9 @@
     "author": ["Astral"],
     "description": "Adds Whatever I Want.",
     "prefix": "mvan",
-    "main_file": "ModdedVanilla.lua",
-    "badge_colour": "fd5f55",
+    "main_file": "Balalalatro.lua",
+    "badge_colour": "440840",
+    "priority": 1000069,
     "dependencies": [
         "Steamodded (>=1.0.0~ALPHA-1225a)"
     ],

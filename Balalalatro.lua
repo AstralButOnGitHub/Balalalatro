@@ -17,7 +17,61 @@ Line 482, Castle 2 ------------ Shows the use of reset_game_globals and colour v
 
 
 SMODS.current_mod.extra_tabs = function()
-    local text_scale = 0.6
+
+--	local original = dofile("C:/Users/Charlie/AppData/Roaming/Balatro/Mods/JokerPoker/localization/en-test.lua")
+	--	local replacements = {
+	--		"Innit?", "Bit Rude Innit?", "Bruv", "Oi", "Tea", "Biscuits", "Crisps", "Crumpets", "Bo' Oh' Oh' Wa' Ah'"
+	--	}
+	--
+	--	math.randomseed(os.time())
+	--
+	--	local function replace_with_random(t)
+	--		for k, v in pairs(t) do
+	--			if type(v) == "table" then
+	--				replace_with_random(v)
+	--			elseif type(v) == "string" then
+	--				t[k] = replacements[math.random(#replacements)]
+	--			end
+	--		end
+	--	end
+	--
+	--	local function serialize_table(tbl, indent)
+	--		indent = indent or 0
+	--		local s = ""
+	--		local prefix = string.rep("    ", indent)
+	--
+	--		s = s .. "{\n"
+	--		for k, v in pairs(tbl) do
+	--			local key = type(k) == "string" and string.format("[%q]", k) or "[" .. tostring(k) .. "]"
+	--			s = s .. prefix .. "    " .. key .. " = "
+	--			if type(v) == "table" then
+	--				s = s .. serialize_table(v, indent + 1)
+	--			elseif type(v) == "string" then
+	--				s = s .. string.format("%q", v)
+	--			else
+	--				s = s .. tostring(v)
+	--			end
+	--			s = s .. ",\n"
+	--		end
+	--		s = s .. prefix .. "}"
+	--		return s
+	--	end
+	--
+	--	replace_with_random(original)
+	--
+	--	local file = io.open("C:/Users/Charlie/AppData/Roaming/Balatro/Mods/JokerPoker/localization/test.lua", "w")
+	--	file:write("return " .. serialize_table(original))
+	--	file:close()
+
+
+
+
+
+
+
+
+
+	local text_scale = 0.6
     return {
         {
             label = G.localization.misc.dictionary.b_credits,
@@ -83,23 +137,20 @@ SMODS.current_mod.extra_tabs = function()
 end
 
 
-
-
-
-
-
-
-
 SMODS.Atlas {
 	-- Key for code to find it with
 	key = "ModdedVanilla",
 	-- The name of the file, for the code to pull the atlas from
-	path = "ModdedVanilla.png",
+	path = {
+		['default'] = 'Jokers.png'
+	},
 	-- Width of each sprite in 1x size
 	px = 71,
 	-- Height of each sprite in 1x size
 	py = 95
 }
+
+
 
 
 
@@ -118,7 +169,7 @@ SMODS.Seal {
 	key = "useless_seal",
 	badge_colour = HEX("b2112a"),
 	atlas = "ModdedVanilla",
-	pos = {x=0, y=1},
+	pos = {x=0, y=3},
 
 	config = {
 		mult = 5, chips = 20, money = 1, x_mult = 1.5
@@ -149,6 +200,84 @@ SMODS.Shader{
 	path = 'pixel.fs'
 }
 
+SMODS.Sound {
+	key = 'music69',
+	path = 'music69.ogg',
+	pitch = 1.0,
+	volume = 0.6,
+}
+
+
+SMODS.Consumable {
+	key = 'tower',
+	set = 'Spectral',
+	pos = { x = 6, y = 1 },
+	config = { extra = { max_highlighted = 1, enh_key = 'm_stone' } },
+	loc_vars = function(self, info_queue, card)
+		info_queue[#info_queue + 1] = G.P_CENTERS[card.ability.extra.enh_key]
+		return { vars = { card.ability.extra.max_highlighted, localize { type = 'name_text', set = 'Enhanced', key = card.ability.extra.enh_key } } }
+	end,
+	use = function(self, card, area, copier)
+		G.E_MANAGER:add_event(Event({
+			trigger = 'after',
+			delay = 0.4,
+			func = function()
+				play_sound('tarot1')
+				card:juice_up(0.3, 0.5)
+				return true
+			end
+		}))
+		for i = 1, #G.hand.highlighted do
+			local percent = 1.15 - (i - 0.999) / (#G.hand.highlighted - 0.998) * 0.3
+			G.E_MANAGER:add_event(Event({
+				trigger = 'after',
+				delay = 0.15,
+				func = function()
+					G.hand.highlighted[i]:flip(); play_sound('card1', percent); G.hand.highlighted[i]:juice_up(0.3, 0.3); return true
+				end
+			}))
+		end
+		delay(0.2)
+		for i = 1, #G.hand.highlighted do
+			G.E_MANAGER:add_event(Event({
+				trigger = 'after',
+				delay = 0.1,
+				func = function()
+					G.hand.highlighted[i]:set_ability(G.P_CENTERS[card.ability.extra.enh_key]); return true
+				end
+			}))
+		end
+		for i = 1, #G.hand.highlighted do
+			local percent = 0.85 + (i - 0.999) / (#G.hand.highlighted - 0.998) * 0.3
+			G.E_MANAGER:add_event(Event({
+				trigger = 'after',
+				delay = 0.15,
+				func = function()
+					G.hand.highlighted[i]:flip()
+					play_sound('tarot2', percent, 0.6)
+					G.hand.highlighted[i]:juice_up(0.3, 0.3)
+					return true
+				end
+			}))
+		end
+		G.E_MANAGER:add_event(Event({
+			trigger = 'after',
+			delay = 0.2,
+			func = function()
+				G.hand:unhighlight_all()
+				return true
+			end
+		}))
+		delay(0.5)
+	end,
+	can_use = function(self, card)
+		return G.hand and #G.hand.highlighted > 0 and #G.hand.highlighted <= card.ability.extra.max_highlighted
+	end
+}
+
+
+
+
 SMODS.Joker {
 	key = 'useless',
 	loc_txt = {
@@ -159,20 +288,22 @@ SMODS.Joker {
 	},
 	draw = function(self, card, layer)
 		if card.config.center.discovered or card.bypass_discovery_center then
-			card.children.center:draw_shader('mvan_pixel', nil, card.ARGS.send_to_shader)
+			card.children.center:draw_shader('debuff', nil, card.ARGS.send_to_shader)
 		end
 	end,
 	config = { extra = { chips = 0, chip_gain = 15 } },
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 1, y = 0 },
+	pos = { x = 0, y = 0 },
 	cost = 5,
+	blueprint_compat = false,
+
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.chips, card.ability.extra.chip_gain } }
 	end,
 	calculate = function(self, card, context)
 
-		if context.before and context.main_eval and not context.blueprint then
+		if context.main_eval and context.after then
 
 			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
 				for i,v in ipairs(context.scoring_hand) do
@@ -206,53 +337,54 @@ SMODS.Joker {
 	loc_txt = {
 		name = '1/5th Joker',
 		text = {
-			"Buy it for the bit."
+			"{X:mult,C:white} X#1# {} Mult for every card",
+			"that isn't played"
 		}
 	},
-	config = { extra = { chips = 0, chip_gain = 15 } },
 	rarity = 1,
 	atlas = 'ModdedVanilla',
 	pos = { x = 1, y = 0 },
-	pixel_size = { h = 71 },
+	pixel_size = { w = 33, h = 45 },
 	cost = 5,
+	config = {
+		extra = { xmult = 2 },
+	},
+	blueprint_compat = true,
+
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.chips, card.ability.extra.chip_gain } }
+		return { vars = { card.ability.extra.xmult } }
 	end,
 	calculate = function(self, card, context)
+		if context.joker_main then
+			local played = 0
+			if G.play.cards then
+				played = #G.play.cards
+			end
 
-		if context.before and context.main_eval and not context.blueprint then
-
-			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-				for i,v in ipairs(context.scoring_hand) do
-					v:flip()
-				end
-				return true
-			end}))
-
-			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-				for i,v in ipairs(context.scoring_hand) do
-					v:set_seal('mvan_useless_seal', true)
-					play_sound('mvan_bad_seal', 1, 0.55)
-					v:juice_up()
-				end
-				return true
-			end}))
-
-			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-				for i,v in ipairs(context.scoring_hand) do
-					v:flip()
-				end
-				return true
-			end}))
-
+			local unplayed = 0
+			unplayed = math.max(0, 5 - played)
+			local final_mult = 0
+			 final_mult= unplayed * 2
+			if final_mult < 1 then
+				final_mult = 2
+			end
+			return {
+				xmult = final_mult
+			}
 		end
 	end
+
+
 }
+
 
 
 SMODS.Sound{
 	key = 'boom',
 	path = 'boom.ogg'
+}
+local replacements = {
+	"PREFIX_boom", "PREFIX_example", "PREFIX_third_one",
 }
 
 SMODS.Joker {
@@ -268,7 +400,7 @@ SMODS.Joker {
 	config = { extra = { hands = 3, } },
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 6, y = 0 },
+	pos = { x = 2, y = 0 },
 	cost = 5,
 	loc_vars = function(self, info_queue, card)
 		return { vars = { card.ability.extra.hands } }
@@ -305,10 +437,12 @@ SMODS.Joker {
 			"EGG."
 		}
 	},
+	no_collection = true,
+	in_pool = function(self) return false end,
 
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 7, y = 0 },
+	pos = { x = 3, y = 0 },
 	cost = 5,
 
 	config = { extra = { } },
@@ -330,8 +464,9 @@ SMODS.Joker {
 --	pixel_size = { w = 142, h = 95 },
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 11, y = 2 },
+	pos = { x = 4, y = 0 },
 	cost = 5,
+	blueprint_compat = true,
 
     config = { extra = { x_mult = 4, size = 3 } },
 	loc_vars = function(self, info_queue, card)
@@ -357,32 +492,7 @@ SMODS.Joker {
 
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 8, y = 1 },
-	cost = 5,
-
-    config = { extra = { x_mult = 4, size = 3 } },
-	loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
-    end,
-	calculate = function(self, card, context)
-        if context.joker_main then
-			
-        end
-    end
-}
-
-SMODS.Joker {
-	key = 'chicken',
-	loc_txt = {
-		name = 'Chicken Sandwich',
-		text = {
-			"test"
-		}
-	},
-
-	rarity = 1,
-	atlas = 'ModdedVanilla',
-	pos = { x = 8, y = 1 },
+	pos = { x = 5, y = 0 },
 	cost = 5,
 
 	config = { extra = { x_mult = 4, size = 3 } },
@@ -390,29 +500,99 @@ SMODS.Joker {
 		return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
 	end,
 	calculate = function(self, card, context)
-		if context.before and context.main_eval and not context.blueprint then
-			local l_joker, r_joker = nil, nil
+		if context.joker_main then
 
-			for i = 1, #G.jokers.cards do
-				if G.jokers.cards[i] == card then
-					if i > 1 then l_joker = G.jokers.cards[i - 1] end
-					if i < #G.jokers.cards then r_joker = G.jokers.cards[i + 1] end
-					break
-				end
-			end
+		end
+	end
+}
 
-			if l_joker and l_joker.config.center_key ~= 'j_mvan_chicken' then
-				l_joker:set_ability('j_mvan_chicken')
-			end
-			if r_joker and r_joker.config.center_key ~= 'j_mvan_chicken' then
-				r_joker:set_ability('j_mvan_chicken')
+
+
+
+SMODS.Language{
+	key = 'test',
+	label = 'test.lua'
+}
+
+SMODS.Joker {
+	key = 'british',
+	loc_txt = {
+		name = 'Br*tish Joker',
+		text = {
+			"Oi Tea And Crumpets Innit?"
+		}
+	},
+
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 6, y = 0 },
+	cost = 5,
+
+	config = { extra = { x_mult = 4, size = 3 } },
+	loc_vars = function(self, info_queue, card)
+
+		return {
+			vars = {
+				card.ability.extra.x_mult, card.ability.extra.size
+			}
+		}
+	end,
+	calculate = function(self, card, context)
+
+		init_localization()
+		G.SETTINGS.language = "fr"
+		G.SETTINGS.real_language = "fr"
+		G:set_language()
+
+
+	end
+}
+
+
+
+
+
+SMODS.Shader{
+	key = 'glitch_effect',
+	path = 'glitch_effect.fs'
+}
+
+SMODS.Joker {
+	key = 'corrupted',
+	loc_txt = {
+		name = 'Corrupted Joker',
+		text = {
+			"ERROR: \"Unexpected Error\""
+		}
+	},
+
+	rarity = 1,
+	atlas = 'ModdedVanilla',
+	pos = { x = 7, y = 0 },
+	cost = 5,
+	blueprint_compat = true,
+
+	config = { extra = { x_mult = 69, odds = 2 } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { G.GAME and G.GAME.probabilities.normal or 1, card.ability.extra.odds, card.ability.extra.x_mult, card.ability.extra.size } }
+	end,
+	calculate = function(self, card, context)
+		if context.individual and context.cardarea == G.play then
+			if pseudorandom('xmpl_gambler') < G.GAME.probabilities.normal / card.ability.extra.odds then
+				return {
+					x_mult = card.ability.extra.x_mult
+				}
+			else
+				error("ERROR",100)
 			end
 		end
-
 	end
 
 
+
 }
+
+
 
 SMODS.Joker {
 	key = 'smudged',
@@ -426,9 +606,8 @@ SMODS.Joker {
 
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 9, y = 1 },
+	pos = { x = 8, y = 0 },
 	cost = 5,
-
     locked_loc_vars = function(self, info_queue, card)
         return { vars = { 3, localize { type = 'name_text', key = 'm_wild', set = 'Enhanced' } } }
     end,
@@ -444,8 +623,6 @@ SMODS.Joker {
         end
         return false
     end
-
-
 }
 
 
@@ -458,13 +635,15 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Nuclear Joker',
 		text = {
-			"EGG."
+			"Vaporizes Neighboring Jokers",
+			"when played poker hand is",
+			"your least played poker hand."
 		}
 	},
 
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 10, y = 0 },
+	pos = { x = 9, y = 0 },
 	cost = 5,
 
     config = { extra = { Xmult_gain = 0.2, Xmult = 1 } },
@@ -535,6 +714,9 @@ calculate = function(self, card, context)
                 }
             end
         end
+		return {
+
+		}
     end
 end
 
@@ -582,7 +764,7 @@ SMODS.Joker {
 	},
 	rarity = 1,
 	atlas = 'ModdedVanilla',
-	pos = { x = 2, y = 0 },
+	pos = { x = 10, y = 0 },
 	cost = 5,
 	config = { extra = { chips = 0, chip_gain = 15, food = 2 } },
 	loc_vars = function(self, info_queue, card)
@@ -717,10 +899,9 @@ SMODS.Consumable {
 	},
 	cost = 4,
 	atlas = "ModdedVanilla",
-	pos = {x=2, y=1},
+	pos = {x=1, y=1},
 
 	use = function(self, card, area, copier)
-		play_sound('timpani')
 
 
 		for n = 1, 60 do
@@ -730,6 +911,10 @@ SMODS.Consumable {
 				delay = delay,
 				func = function()
 					SMODS.add_card{key = "c_mvan_bacon"}
+					card:juice_up(0.3, 0.5)
+
+					play_sound('timpani')
+
 					return true
 				end
 			}))end
@@ -740,7 +925,6 @@ SMODS.Consumable {
 			delay = 0.4,
 			func = function()
 
-				card:juice_up(0.3, 0.5)
 
 				error("Bacon = Infinity, Ruh Roh",0)
 				return true
@@ -753,7 +937,7 @@ SMODS.Consumable {
 
 
 	can_use = function(self, card)
-		return G.jokers and #G.jokers.cards < G.jokers.config.card_limit
+		return true
 	end
 }
 
@@ -818,24 +1002,151 @@ SMODS.Consumable {
 	end
 }
 
+-- sketched (this is for me searching sketched instead of etched because I'm stupid.)
+SMODS.Joker {
+	key = "etched",
+	loc_txt = {
+		name = "Etched Joker",
+		text = {
+			"Copies the ability",
+			"of leftmost or",
+			"rightmost {C:attention}Joker{}.",
+			"{s:0.8}Direction switches after each use.{}",
+			"{C:inactive}(Currently {C:attention}#2#{C:inactive})"
+		}
+	},
+	blueprint_compat = false,
+	rarity = 3,
+	cost = 10,
+	atlas = "ModdedVanilla",
+	pos = { x = 12, y = 0 },
+	config = { extra = { direction = "Leftmost" } },
+
+	loc_vars = function(self, info_queue, card)
+		local direction = card.ability.extra.direction or "Leftmost"
+		local target_name = "None"
+		local compatible = false
+		local other_joker = nil
+
+		if G.jokers then
+			local jokers = G.jokers.cards
+
+			local target = (direction == "Leftmost") and jokers[1] or jokers[#jokers]
+			target_name = target and target.ability.name or "None"
+
+			for i = 1, #jokers do
+				if jokers[i] == card then
+					other_joker = jokers[i + 1]
+					break
+				end
+			end
+
+			compatible = other_joker and other_joker ~= card and other_joker.config.center.blueprint_compat or false
+		end
+
+		local main_end = (card.area and card.area == G.jokers) and {
+			{
+				n = G.UIT.C,
+				config = { align = "bm", minh = 0.4 },
+				nodes = {
+					{
+						n = G.UIT.C,
+						config = {
+							ref_table = card,
+							align = "m",
+							colour = compatible and mix_colours(G.C.GREEN, G.C.JOKER_GREY, 0.8) or mix_colours(G.C.RED, G.C.JOKER_GREY, 0.8),
+							r = 0.05,
+							padding = 0.06
+						},
+						nodes = {
+							{
+								n = G.UIT.T,
+								config = {
+									text = ' ' .. localize('k_' .. (compatible and 'compatible' or 'incompatible')) .. ' ',
+									colour = G.C.UI.TEXT_LIGHT,
+									scale = 0.32 * 0.8
+								}
+							},
+						}
+					}
+				}
+			}
+		} or nil
+
+		return {
+			vars = { target_name, direction },
+			main_end = main_end
+		}
+	end,
+
+	calculate = function(self, card, context)
+		local direction = card.ability.extra.direction or "Leftmost"
+		if G.jokers then
+			local jokers = G.jokers.cards
+			local target = (direction == "Leftmost") and jokers[1] or jokers[#jokers]
+
+			if target == card then
+				target = nil
+			end
+
+				local ret
+				if target then
+					ret = SMODS.blueprint_effect(card, target, context)
+					if ret then
+						ret.colour = G.C.RED
+					end
+				end
+
+				-- Switch direction after use
+				if context.after and not context.blueprint then
+					card.ability.extra.direction = (direction == "Leftmost") and "Rightmost" or "Leftmost"
+					return {
+						message = "Switch!",
+					}
+				end
+
+				return ret
+			end
+	end
+}
+
+
+
 
 SMODS.Atlas {
 	key = "wipbanana",
-	path = "wipbanana.png",
+	path = {
+		['default'] = 'wipbanana.png'
+	},
 	px = 71,
 	py = 95
+}
+
+SMODS.Atlas {
+	key = "banana_ui",
+	path = {
+		['default'] = 'banana_ui.png'
+	},
+	px = 18,
+	py = 18
 }
 
 SMODS.Suit {
    key = "banana_suit",
    card_key = "S",
+   loc_txt = {
+	   singular = 'Banan',
+	   plural = 'Banans',
+   },
    pos = {y = 0},
    ui_pos = {x=0, y=0},
    lc_atlas = "wipbanana",
-   lc_ui_atlas = "wipbanana",
+   lc_ui_atlas = "banana_ui",
    hc_atlas = "wipbanana",
-   hc_ui_atlas = "wipbanana",
-   in_pool = true
+   hc_ui_atlas = "banana_ui",
+   lc_colour = 'fddf00',
+   hc_colour = 'fddf00',
+   in_pool = function(self) return false end
 }
 
 
@@ -846,27 +1157,68 @@ SMODS.Sound{
 }
 
 
-SMODS.Seal {
-	name = "goop-seal",
-	key = "goop_seal",
+SMODS.Edition {
+	name = "goop",
+	key = "goop",
 	badge_colour = HEX("b2112a"),
 	atlas = "ModdedVanilla",
-	pos = {x=3, y=1},
+	pos = {x=0, y=4},
+	shader = false,
 	loc_txt = {
-		-- Badge name (displayed on card description when seal is applied)
-		label = 'Goop Seal',
-		-- Tooltip description
-		name = 'Goop Seal',
+		label = 'Goop',
+		name = 'Goop',
 		text = {
 			'Covers the Suit and Rank',
 			'but gives {C:red,s:1.1}+#1#{} Mult'
 		}
 	},
     config = { mult = 4 },
-    loc_vars = function(self, info_queue, card)
-        return { vars = { self.config.mult } }
-    end,
 }
+
+SMODS.Challenge {
+	key = 'cat_challenge',
+	loc_txt = 'The Devourer',
+	jokers = {
+		{
+			id = 'j_mvan_cat', eternal=true
+		}
+	},
+	unlocked = true
+}
+
+SMODS.Challenge {
+	key = 'hopeless_challenge',
+	loc_txt = 'There\'s Nothing We Can Do...',
+	jokers = {
+		{
+			id = 'j_mvan_useless', eternal=true
+		}
+	},
+	unlocked = true
+}
+
+SMODS.Challenge {
+	key = 'nuclear_challenge',
+	loc_txt = 'Nuclear Family',
+	jokers = {
+		{
+			id = 'j_mvan_nuclear', eternal=true,
+		}
+	},
+	unlocked = true
+}
+
+SMODS.Challenge {
+	key = 'error_challenge',
+	loc_txt = 'ERROR: UNEXPECTED CHALLENGE',
+	jokers = {
+		{
+			id = 'j_mvan_corrupted', eternal=true,
+		}
+	},
+	unlocked = true
+}
+
 
 
 SMODS.Joker {
@@ -890,6 +1242,7 @@ SMODS.Joker {
 	-- #1# is the first variable in vars, #2# the second, #3# the third, and so on.
 	-- It's also where you'd add to the info_queue, which is where things like the negative tooltip are.
 	loc_vars = function(self, info_queue, card)
+		info_queue[#info_queue + 1] = G.P_CENTERS.m_mvan_goop_seal
 		return { vars = { card.ability.extra.chips, card.ability.extra.chip_gain } }
 	end,
 	-- Sets rarity. 1 common, 2 uncommon, 3 rare, 4 legendary.
@@ -897,7 +1250,7 @@ SMODS.Joker {
 	-- Which atlas key to pull from.
 	atlas = 'ModdedVanilla',
 	-- This card's position on the atlas, starting at {x=0,y=0} for the very top left.
-	pos = { x = 0, y = 0 },
+	pos = { x = 11, y = 0 },
 	-- Cost of card in shop.
 	cost = 2,
 	-- The functioning part of the joker, looks at context to decide what step of scoring the game is on, and then gives a 'return' value if something activates.
@@ -961,6 +1314,7 @@ SMODS.Enhancement {
 
 
 }
+
 
 
 
