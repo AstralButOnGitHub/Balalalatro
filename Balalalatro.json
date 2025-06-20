@@ -1,9 +1,9 @@
 {
-    "id": "VSMODS",
+    "id": "Balalalatro",
     "name": "Balalalatro",
     "author": ["Astral"],
     "description": "Adds Whatever I Want.",
-    "prefix": "mvan",
+    "prefix": "balalalatro",
     "main_file": "Balalalatro.lua",
     "badge_colour": "440840",
     "priority": 1000069,

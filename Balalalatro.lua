@@ -1,75 +1,9 @@
---[[
-------------------------------Basic Table of Contents------------------------------
-Line 17, Atlas ---------------- Explains the parts of the atlas.
-Line 29, Joker 2 -------------- Explains the basic structure of a joker
-Line 88, Runner 2 ------------- Uses a bit more complex contexts, and shows how to scale a value.
-Line 127, Golden Joker 2 ------ Shows off a specific function that's used to add money at the end of a round.
-Line 163, Merry Andy 2 -------- Shows how to use add_to_deck and remove_from_deck.
-Line 207, Sock and Buskin 2 --- Shows how you can retrigger cards and check for faces
-Line 240, Perkeo 2 ------------ Shows how to use the event manager, eval_status_text, randomness, and soul_pos.
-Line 310, Walkie Talkie 2 ----- Shows how to look for multiple specific ranks, and explains returning multiple values
-Line 344, Gros Michel 2 ------- Shows the no_pool_flag, sets a pool flag, another way to use randomness, and end of round stuff.
-Line 418, Cavendish 2 --------- Shows yes_pool_flag, has X Mult, mainly to go with Gros Michel 2.
-Line 482, Castle 2 ------------ Shows the use of reset_game_globals and colour variables in loc_vars, as well as what a hook is and how to use it.
---]]
-
---Creates an atlas for cards to use
 
 
+
+-- Lowkey I got github copilot to do this.
+-- I'm too stupid for this.
 SMODS.current_mod.extra_tabs = function()
-
---	local original = dofile("C:/Users/Charlie/AppData/Roaming/Balatro/Mods/JokerPoker/localization/en-test.lua")
-	--	local replacements = {
-	--		"Innit?", "Bit Rude Innit?", "Bruv", "Oi", "Tea", "Biscuits", "Crisps", "Crumpets", "Bo' Oh' Oh' Wa' Ah'"
-	--	}
-	--
-	--	math.randomseed(os.time())
-	--
-	--	local function replace_with_random(t)
-	--		for k, v in pairs(t) do
-	--			if type(v) == "table" then
-	--				replace_with_random(v)
-	--			elseif type(v) == "string" then
-	--				t[k] = replacements[math.random(#replacements)]
-	--			end
-	--		end
-	--	end
-	--
-	--	local function serialize_table(tbl, indent)
-	--		indent = indent or 0
-	--		local s = ""
-	--		local prefix = string.rep("    ", indent)
-	--
-	--		s = s .. "{\n"
-	--		for k, v in pairs(tbl) do
-	--			local key = type(k) == "string" and string.format("[%q]", k) or "[" .. tostring(k) .. "]"
-	--			s = s .. prefix .. "    " .. key .. " = "
-	--			if type(v) == "table" then
-	--				s = s .. serialize_table(v, indent + 1)
-	--			elseif type(v) == "string" then
-	--				s = s .. string.format("%q", v)
-	--			else
-	--				s = s .. tostring(v)
-	--			end
-	--			s = s .. ",\n"
-	--		end
-	--		s = s .. prefix .. "}"
-	--		return s
-	--	end
-	--
-	--	replace_with_random(original)
-	--
-	--	local file = io.open("C:/Users/Charlie/AppData/Roaming/Balatro/Mods/JokerPoker/localization/test.lua", "w")
-	--	file:write("return " .. serialize_table(original))
-	--	file:close()
-
-
-
-
-
-
-
-
 
 	local text_scale = 0.6
     return {
@@ -138,21 +72,19 @@ end
 
 
 SMODS.Atlas {
-	-- Key for code to find it with
-	key = "ModdedVanilla",
-	-- The name of the file, for the code to pull the atlas from
+	key = "Jokers",
 	path = {
 		['default'] = 'Jokers.png'
 	},
-	-- Width of each sprite in 1x size
 	px = 71,
-	-- Height of each sprite in 1x size
 	py = 95
 }
 
 
-
-
+-- Why I have to define this I have no clue!
+SMODS.current_mod.optional_features = {
+	retrigger_joker = true
+}
 
 
 
@@ -160,24 +92,45 @@ SMODS.Sound{
 	key = 'bad_seal',
 	path = 'bad_seal.ogg'
 }
-
-
-
+SMODS.Sound {
+	key = 'music69',
+	path = 'music69.ogg',
+	pitch = 1.0,
+	volume = 0.6,
+}
+SMODS.Sound{
+	key = 'boom',
+	path = 'boom.ogg'
+}
+SMODS.Sound{
+	key = 'chomp',
+	path = 'chomp.ogg'
+}
+SMODS.Sound{
+	key = 'hunger',
+	path = 'hunger.ogg'
+}
+SMODS.Sound{
+	key = 'ah',
+	path = 'ah.ogg'
+}
+SMODS.Sound{
+	key = 'splosh',
+	path = 'splosh.ogg'
+}
 
 SMODS.Seal {
 	name = "useless-seal",
 	key = "useless_seal",
 	badge_colour = HEX("b2112a"),
-	atlas = "ModdedVanilla",
+	atlas = "Jokers",
 	pos = {x=0, y=3},
 
 	config = {
 		mult = 5, chips = 20, money = 1, x_mult = 1.5
 	},
 	loc_txt = {
-		-- Badge name (displayed on card description when seal is applied)
 		label = 'Useless Seal',
-		-- Tooltip description
 		name = 'Useless Seal',
 		text = {
 			'{C:red}Debuffs{} this card'
@@ -188,24 +141,13 @@ SMODS.Seal {
 	end,
 
 
-	-- self - this seal prototype
-	-- card - card this seal is applied to
 	calculate = function(self, card, context)
 		card:set_debuff(true)
 	end,
 }
 
-SMODS.Shader{
-	key = 'pixel',
-	path = 'pixel.fs'
-}
 
-SMODS.Sound {
-	key = 'music69',
-	path = 'music69.ogg',
-	pitch = 1.0,
-	volume = 0.6,
-}
+
 
 
 SMODS.Consumable {
@@ -293,7 +235,7 @@ SMODS.Joker {
 	end,
 	config = { extra = { chips = 0, chip_gain = 15 } },
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 0, y = 0 },
 	cost = 5,
 	blueprint_compat = false,
@@ -314,8 +256,8 @@ SMODS.Joker {
 
 			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
 				for i,v in ipairs(context.scoring_hand) do
-					v:set_seal('mvan_useless_seal', true)
-					play_sound('mvan_bad_seal', 1, 0.55)
+					v:set_seal('balalalatro_useless_seal', true)
+					play_sound('balalalatro_bad_seal', 1, 0.55)
 					v:juice_up()
 				end
 				return true
@@ -342,7 +284,7 @@ SMODS.Joker {
 		}
 	},
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 1, y = 0 },
 	pixel_size = { w = 33, h = 45 },
 	cost = 5,
@@ -379,10 +321,7 @@ SMODS.Joker {
 
 
 
-SMODS.Sound{
-	key = 'boom',
-	path = 'boom.ogg'
-}
+
 local replacements = {
 	"PREFIX_boom", "PREFIX_example", "PREFIX_third_one",
 }
@@ -399,7 +338,7 @@ SMODS.Joker {
 
 	config = { extra = { hands = 3, } },
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 2, y = 0 },
 	cost = 5,
 	loc_vars = function(self, info_queue, card)
@@ -415,9 +354,9 @@ SMODS.Joker {
 		
 		if card.ability.extra.hands < 1 then
 			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-				play_sound('mvan_boom', 1, 0.55)
+				play_sound('balalalatro_boom', 1, 0.55)
 				SMODS.destroy_cards(card)
-				SMODS.add_card {key = 'j_mvan_dwayne_egg_after', edition = card.edition, stickers = { 'eternal','pinned' } }
+				SMODS.add_card {key = 'j_balalalatro_dwayne_egg_after', edition = card.edition, stickers = { 'eternal','pinned' } }
 				return {
 					message = "Egg.",
 					colour = G.C.RED
@@ -441,7 +380,7 @@ SMODS.Joker {
 	in_pool = function(self) return false end,
 
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 3, y = 0 },
 	cost = 5,
 
@@ -463,7 +402,7 @@ SMODS.Joker {
 	display_size = { w = 142, h = 95 },
 --	pixel_size = { w = 142, h = 95 },
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 4, y = 0 },
 	cost = 5,
 	blueprint_compat = true,
@@ -486,22 +425,38 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Astral Joker',
 		text = {
-			"test"
+			"Retriggers all {E:2,C:attention}Jokers{} twice",
+			"but doubles the {E:2,C:red}Winning Ante{}"
 		}
 	},
 
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 5, y = 0 },
 	cost = 5,
 
-	config = { extra = { x_mult = 4, size = 3 } },
+	config = { extra = { x_mult = 4, has_anted = false } },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
+		return { vars = { card.ability.extra.x_mult, card.ability.extra.has_anted } }
 	end,
 	calculate = function(self, card, context)
-		if context.joker_main then
 
+		if context.retrigger_joker_check then
+			return {
+				repetitions = 2
+			}
+		end
+	end,
+	add_to_deck = function(self, card, from_debuff)
+		if G.GAME.win_ante and not card.ability.extra.has_anted then
+			card.ability.extra.has_anted = true
+			G.GAME.win_ante = G.GAME.win_ante * 2
+		end
+	end,
+	remove_from_deck = function(self, card, from_debuff)
+		if G.GAME.win_ante and card.ability.extra.has_anted then
+			card.ability.extra.has_anted = true
+			G.GAME.win_ante = G.GAME.win_ante / 2
 		end
 	end
 }
@@ -524,7 +479,7 @@ SMODS.Joker {
 	},
 
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 6, y = 0 },
 	cost = 5,
 
@@ -539,9 +494,11 @@ SMODS.Joker {
 	end,
 	calculate = function(self, card, context)
 
+		G:set_language()
 		init_localization()
 		G.SETTINGS.language = "fr"
 		G.SETTINGS.real_language = "fr"
+		init_localization()
 		G:set_language()
 
 
@@ -552,10 +509,6 @@ SMODS.Joker {
 
 
 
-SMODS.Shader{
-	key = 'glitch_effect',
-	path = 'glitch_effect.fs'
-}
 
 SMODS.Joker {
 	key = 'corrupted',
@@ -567,7 +520,7 @@ SMODS.Joker {
 	},
 
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 7, y = 0 },
 	cost = 5,
 	blueprint_compat = true,
@@ -599,31 +552,51 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Smudged Joker',
 		text = {
-			"All {E:2,C:attention}face{} cards",
-			"act as the same rank"
-		}
+			"This Joker gains",
+			"{X:mult,C:white} X#1# {} Mult every time",
+			"a {E:2,C:attention}face card{} is played",
+			"{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)",
+		},
 	},
 
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 8, y = 0 },
 	cost = 5,
-    locked_loc_vars = function(self, info_queue, card)
-        return { vars = { 3, localize { type = 'name_text', key = 'm_wild', set = 'Enhanced' } } }
-    end,
-    check_for_unlock = function(self, args)
-        if args.type == 'modify_deck' then
-            local count = 0
-            for _, playing_card in ipairs(G.playing_cards or {}) do
-                if SMODS.has_enhancement(playing_card, 'm_wild') then count = count + 1 end
-                if count >= 3 then
-                    return true
-                end
-            end
-        end
-        return false
-    end
+	blueprint_compat = true,
+
+	config = { extra = { Xmult = 1, Xmult_mod = 0.1 } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.Xmult_mod, card.ability.extra.Xmult } }
+	end,
+	calculate = function(self, card, context)
+		if context.individual and context.cardarea == G.play then
+			local other_id = context.other_card:get_id()
+			if other_id > 10 and other_id < 14 then
+				card.ability.extra.Xmult = card.ability.extra.Xmult + card.ability.extra.Xmult_mod
+
+				return {
+					message = localize {
+						type = 'variable',
+						key = 'a_xmult',
+						vars = { card.ability.extra.Xmult }
+					}
+				}
+			end
+		end
+
+		if context.joker_main then
+			return {
+				Xmult = card.ability.extra.Xmult
+			}
+		end
+	end
+
 }
+
+
+
+
 
 
 
@@ -635,14 +608,15 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Nuclear Joker',
 		text = {
-			"Vaporizes Neighboring Jokers",
-			"when played poker hand is",
-			"your least played poker hand."
+			"Vaporizes neighboring {C:attention}Jokers{} (including {C:purple}Eternals{})",
+			"when your played {C:attention}poker hand{} is",
+			"your {C:attention}least played poker hand{}"
 		}
 	},
 
+
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 9, y = 0 },
 	cost = 5,
 
@@ -704,7 +678,7 @@ calculate = function(self, card, context)
             end
 
             if destroyed then
-                play_sound('mvan_ah', 1, 0.55)
+                play_sound('balalalatro_ah', 1, 0.55)
                 return {
                     message = "Boom! Neighboring Joker(s) Destroyed!"
                 }
@@ -735,18 +709,7 @@ end
 
 
 
-SMODS.Sound{
-	key = 'chomp',
-	path = 'chomp.ogg'
-}
-SMODS.Sound{
-	key = 'hunger',
-	path = 'hunger.ogg'
-}
-SMODS.Sound{
-	key = 'ah',
-	path = 'ah.ogg'
-}
+
 
 SMODS.Joker {
 	key = 'cat',
@@ -756,14 +719,14 @@ SMODS.Joker {
     		"Consumes the {E:2,C:attention}Joker{} to its right",
     		"after a hand is played,",
 			"gaining {E:2,C:attention}+1 Food{} per {E:2,C:attention}Joker{} consumed.",
-			"Loses {E:2,C:attention}1 Food{} when a Blind is selected.",
+			"Loses {E:2,C:attention}1 Food{} when a Boss Blind is defeated.",
 			"You {S:1.1,C:red,E:1}lose the run{} if it runs out of {E:2,C:attention}Food{}.",
 			"You also {S:1.1,C:red,E:1}lose the run{} if it has too much {E:2,C:attention}Food{}.",
 			"{E:2,C:attention}Current Food: #1#{}",
 		}
 	},
 	rarity = 1,
-	atlas = 'ModdedVanilla',
+	atlas = 'Jokers',
 	pos = { x = 10, y = 0 },
 	cost = 5,
 	config = { extra = { chips = 0, chip_gain = 15, food = 2 } },
@@ -775,67 +738,69 @@ SMODS.Joker {
 
 calculate = function(self, card, context)
 	local food_card = nil
-	for i = 1, #G.jokers.cards do
-		if G.jokers.cards[i] == card then
-			food_card = G.jokers.cards[i + 1]
-			break
+	if G.jokers then
+		for i = 1, #G.jokers.cards do
+			if G.jokers.cards[i] == card then
+				food_card = G.jokers.cards[i + 1]
+				break
+			end
 		end
-	end
 
-	if food_card then
-		local eval = function()
-			return G.GAME.current_round.discards_used == 0 and not G.RESET_JIGGLES
+		if food_card then
+			local eval = function()
+				return G.GAME.current_round.discards_used == 0 and not G.RESET_JIGGLES
+			end
+			juice_card_until(food_card, eval, true)
 		end
-		juice_card_until(food_card, eval, true)
-	end
 
-	if context.setting_blind and (#G.jokers.cards + G.GAME.joker_buffer) < G.jokers.config.card_limit then
-		card.ability.extra.food = card.ability.extra.food - 1
-		play_sound('mvan_hunger', 1, 0.55)
+		if context.setting_blind and (#G.jokers.cards + G.GAME.joker_buffer) < G.jokers.config.card_limit then
+			card.ability.extra.food = card.ability.extra.food - 1
+			play_sound('balalalatro_hunger', 1, 0.55)
 
-		return {
-			message = "Starving!",
-			colour = G.C.RED,
-		}
-	end
-
-	if context.after and food_card then
-    G.E_MANAGER:add_event(Event({
-        func = (function()
-            play_sound('mvan_chomp', 1, 0.55)
-            food_card:start_dissolve({ G.C.RED }, nil, 1.6)
-            card.ability.extra.food = card.ability.extra.food + 1
-            return true
-        end)
-    }))
-    if card.ability.extra.food > 3 then
-        G.STATE = G.STATES.GAME_OVER
-        G.STATE_COMPLETE = false
-        return {
-            message = "Overfed!",
-            colour = G.C.RED,
-        }
-    end
-
-    return {
-        message = "Devoured!",
-    }
-end
-
-	if card.ability.extra.food < 1 then
-		local eval = function()
-			return G.GAME.current_round.discards_used == 0 and not G.RESET_JIGGLES
-		end
-		juice_card_until(card, eval, true)
-
-		if card.ability.extra.food < 0 then
-			play_sound('mvan_ah', 1, 0.55)
-			G.STATE = G.STATES.GAME_OVER
-			G.STATE_COMPLETE = false
 			return {
-				message = "Starved!",
+				message = "Starving!",
 				colour = G.C.RED,
 			}
+		end
+
+		if context.after and food_card then
+			G.E_MANAGER:add_event(Event({
+				func = (function()
+					play_sound('balalalatro_chomp', 1, 0.55)
+					food_card:start_dissolve({ G.C.RED }, nil, 1.6)
+					card.ability.extra.food = card.ability.extra.food + 1
+					return true
+				end)
+			}))
+			if card.ability.extra.food > 3 then
+				G.STATE = G.STATES.GAME_OVER
+				G.STATE_COMPLETE = false
+				return {
+					message = "Overfed!",
+					colour = G.C.RED,
+				}
+			end
+
+			return {
+				message = "Devoured!",
+			}
+		end
+
+		if card.ability.extra.food < 1 then
+			local eval = function()
+				return G.GAME.current_round.discards_used == 0 and not G.RESET_JIGGLES
+			end
+			juice_card_until(card, eval, true)
+
+			if card.ability.extra.food < 0 then
+				play_sound('balalalatro_ah', 1, 0.55)
+				G.STATE = G.STATES.GAME_OVER
+				G.STATE_COMPLETE = false
+				return {
+					message = "Starved!",
+					colour = G.C.RED,
+				}
+			end
 		end
 	end
 end
@@ -845,20 +810,19 @@ end
 
 
 
+
 SMODS.Seal {
 	name = "sussy-seal",
 	key = "sussy_seal",
 	badge_colour = HEX("b2112a"),
-	atlas = "ModdedVanilla",
-	pos = {x=5, y=1},
+	atlas = "Jokers",
+	pos = {x=1, y=3},
 
 	config = {
 		mult = 5, chips = 20, money = 1, x_mult = 1.5
 	},
 	loc_txt = {
-		-- Badge name (displayed on card description when seal is applied)
 		label = 'Sussy Seal',
-		-- Tooltip description
 		name = 'Sussy Seal',
 		text = {
 			'When Hand is Played',
@@ -870,12 +834,11 @@ SMODS.Seal {
 	end,
 
 
-	-- self - this seal prototype
-	-- card - card this seal is applied to
+
 	calculate = function(self, card, context)
 		if context.main_scoring and context.cardarea == G.play then
 			if pseudorandom('LETSGOGAMBLING') < G.GAME.probabilities.normal / 8 then
-				card:set_seal('mvan_useless_seal', true)
+				card:set_seal('balalalatro_useless_seal', true)
 			end
 		end
 	end
@@ -898,7 +861,7 @@ SMODS.Consumable {
 		}
 	},
 	cost = 4,
-	atlas = "ModdedVanilla",
+	atlas = "Jokers",
 	pos = {x=1, y=1},
 
 	use = function(self, card, area, copier)
@@ -910,7 +873,7 @@ SMODS.Consumable {
 				trigger = 'after',
 				delay = delay,
 				func = function()
-					SMODS.add_card{key = "c_mvan_bacon"}
+					SMODS.add_card{key = "c_balalalatro_bacon"}
 					card:juice_up(0.3, 0.5)
 
 					play_sound('timpani')
@@ -945,62 +908,60 @@ SMODS.Consumable {
 
 
 
-SMODS.Consumable {
-	set = "Spectral",
-	key = "steal",
-	loc_vars = function(self, info_queue, card)
-		-- Handle creating a tooltip with seal args.
-		info_queue[#info_queue+1] = G.P_SEALS[(card.ability or self.config).extra]
-		-- Description vars
-		return {vars = {(card.ability or self.config).max_highlighted}}
-	end,
-	loc_txt = {
-		name = 'Steal',
-		text = {
-			"\"damn daniel back at it again with the white windowless vans.\""
-		}
-	},
-	cost = 4,
-	atlas = "ModdedVanilla",
-	pos = {x=12, y=2},
-
-	use = function(self, card, area, copier)
-		play_sound('timpani')
-
-
-		for n = 1, 60 do
-			local delay = math.max(0.05, 0.4 - n * 0.01)
-			G.E_MANAGER:add_event(Event({
-				trigger = 'after',
-				delay = delay,
-				func = function()
-					SMODS.add_card{key = "c_mvan_bacon"}
-					return true
-				end
-			}))end
-
-
-		G.E_MANAGER:add_event(Event({
-			trigger = 'after',
-			delay = 0.4,
-			func = function()
-
-				card:juice_up(0.3, 0.5)
-
-				error("Bacon = Infinity, Ruh Roh",0)
-				return true
-			end
-		}))
-
-		delay(30 * 0.4 + 0.2)
-	end,
-
-
-
-	can_use = function(self, card)
-		return G.jokers and #G.jokers.cards < G.jokers.config.card_limit
-	end
-}
+--SMODS.Consumable {
+--	set = "Spectral",
+--	key = "steal",
+--	loc_vars = function(self, info_queue, card)
+--		info_queue[#info_queue+1] = G.P_SEALS[(card.ability or self.config).extra]
+--		return {vars = {(card.ability or self.config).max_highlighted}}
+--	end,
+--	loc_txt = {
+--		name = 'Steal',
+--		text = {
+--			"\"damn daniel back at it again with the white windowless vans.\""
+--		}
+--	},
+--	cost = 4,
+--	atlas = "ModdedVanilla",
+--	pos = {x=12, y=2},
+--
+--	use = function(self, card, area, copier)
+--		play_sound('timpani')
+--
+--
+--		for n = 1, 60 do
+--			local delay = math.max(0.05, 0.4 - n * 0.01)
+--			G.E_MANAGER:add_event(Event({
+--				trigger = 'after',
+--				delay = delay,
+--				func = function()
+--					SMODS.add_card{key = "c_mvan_bacon"}
+--					return true
+--				end
+--			}))end
+--
+--
+--		G.E_MANAGER:add_event(Event({
+--			trigger = 'after',
+--			delay = 0.4,
+--			func = function()
+--
+--				card:juice_up(0.3, 0.5)
+--
+--				error("Bacon = Infinity, Ruh Roh",0)
+--				return true
+--			end
+--		}))
+--
+--		delay(30 * 0.4 + 0.2)
+--	end,
+--
+--
+--
+--	can_use = function(self, card)
+--		return G.jokers and #G.jokers.cards < G.jokers.config.card_limit
+--	end
+--}
 
 -- sketched (this is for me searching sketched instead of etched because I'm stupid.)
 SMODS.Joker {
@@ -1016,9 +977,7 @@ SMODS.Joker {
 		}
 	},
 	blueprint_compat = false,
-	rarity = 3,
-	cost = 10,
-	atlas = "ModdedVanilla",
+	atlas = "Jokers",
 	pos = { x = 12, y = 0 },
 	config = { extra = { direction = "Leftmost" } },
 
@@ -1097,7 +1056,6 @@ SMODS.Joker {
 					end
 				end
 
-				-- Switch direction after use
 				if context.after and not context.blueprint then
 					card.ability.extra.direction = (direction == "Leftmost") and "Rightmost" or "Leftmost"
 					return {
@@ -1151,28 +1109,27 @@ SMODS.Suit {
 
 
 
-SMODS.Sound{
-	key = 'splosh',
-	path = 'splosh.ogg'
-}
 
 
-SMODS.Edition {
-	name = "goop",
-	key = "goop",
+
+SMODS.Seal {
+	name = "goop-seal",
+	key = "goop_seal",
 	badge_colour = HEX("b2112a"),
-	atlas = "ModdedVanilla",
+	atlas = "Jokers",
 	pos = {x=0, y=4},
-	shader = false,
 	loc_txt = {
-		label = 'Goop',
-		name = 'Goop',
+		label = 'Goop Seal',
+		name = 'Goop Seal',
 		text = {
 			'Covers the Suit and Rank',
 			'but gives {C:red,s:1.1}+#1#{} Mult'
 		}
 	},
-    config = { mult = 4 },
+	config = { mult = 4 },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { self.config.mult } }
+	end,
 }
 
 SMODS.Challenge {
@@ -1180,7 +1137,7 @@ SMODS.Challenge {
 	loc_txt = 'The Devourer',
 	jokers = {
 		{
-			id = 'j_mvan_cat', eternal=true
+			id = 'j_balalalatro_cat', eternal=true
 		}
 	},
 	unlocked = true
@@ -1191,7 +1148,7 @@ SMODS.Challenge {
 	loc_txt = 'There\'s Nothing We Can Do...',
 	jokers = {
 		{
-			id = 'j_mvan_useless', eternal=true
+			id = 'j_balalalatro_useless', eternal=true
 		}
 	},
 	unlocked = true
@@ -1202,7 +1159,7 @@ SMODS.Challenge {
 	loc_txt = 'Nuclear Family',
 	jokers = {
 		{
-			id = 'j_mvan_nuclear', eternal=true,
+			id = 'j_balalalatro_nuclear', eternal=true,
 		}
 	},
 	unlocked = true
@@ -1213,47 +1170,46 @@ SMODS.Challenge {
 	loc_txt = 'ERROR: UNEXPECTED CHALLENGE',
 	jokers = {
 		{
-			id = 'j_mvan_corrupted', eternal=true,
+			id = 'j_balalalatro_corrupted', eternal=true,
 		}
+	},
+	unlocked = true
+}
+
+SMODS.Challenge {
+	key = 'easy_challenge',
+	loc_txt = 'Easy Dubz',
+	jokers = {
+		{ id = 'j_balalalatro_astral' }
+	},
+	rules = {
+		modifiers = {
+			{ id = "joker_slots", value = 10 },
+		},
 	},
 	unlocked = true
 }
 
 
 
+
 SMODS.Joker {
-	-- How the code refers to the joker.
 	key = 'paint',
-	-- loc_text is the actual name and description that show in-game for the card.
 	loc_txt = {
 		name = 'Painted Joker',
 		text = {
 			"test"
 		}
 	},
-	--[[
-		Config sets all the variables for your card, you want to put all numbers here.
-		This is really useful for scaling numbers, but should be done with static numbers -
-		If you want to change the static value, you'd only change this number, instead
-		of going through all your code to change each instance individually.
-		]]
 	config = { extra = { chips = 0, chip_gain = 15 } },
-	-- loc_vars gives your loc_text variables to work with, in the format of #n#, n being the variable in order.
-	-- #1# is the first variable in vars, #2# the second, #3# the third, and so on.
-	-- It's also where you'd add to the info_queue, which is where things like the negative tooltip are.
 	loc_vars = function(self, info_queue, card)
-		info_queue[#info_queue + 1] = G.P_CENTERS.m_mvan_goop_seal
+		info_queue[#info_queue + 1] = G.P_CENTERS.m_balalalatro_goop_seal
 		return { vars = { card.ability.extra.chips, card.ability.extra.chip_gain } }
 	end,
-	-- Sets rarity. 1 common, 2 uncommon, 3 rare, 4 legendary.
 	rarity = 1,
-	-- Which atlas key to pull from.
-	atlas = 'ModdedVanilla',
-	-- This card's position on the atlas, starting at {x=0,y=0} for the very top left.
+	atlas = 'Jokers',
 	pos = { x = 11, y = 0 },
-	-- Cost of card in shop.
 	cost = 2,
-	-- The functioning part of the joker, looks at context to decide what step of scoring the game is on, and then gives a 'return' value if something activates.
 	calculate = function(self, card, context)
 
         if context.before and context.main_eval and not context.blueprint then
@@ -1267,8 +1223,8 @@ SMODS.Joker {
 
 			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
 				for i,v in ipairs(context.scoring_hand) do
-					v:set_seal('mvan_goop_seal', true)
-					play_sound('mvan_splosh', 1, 0.55)
+					v:set_seal('balalalatro_goop_seal', true)
+					play_sound('balalalatro_splosh', 1, 0.55)
 					v:juice_up()
 				end
 				return true
@@ -1316,44 +1272,4 @@ SMODS.Enhancement {
 }
 
 
-
-
---[[ This is called a hook. It's a less intrusive way of running your code when base game functions
-	get called than lovely injections. It works by saving the base game function, local igo, then
-	overwriting the current function with your own. You then run the saved function, igo, to make
-	the function do everything it was previously already doing, and then you add your code in, so
-	that it runs either before or after the rest of the function gets used.
-							
-	This function hooks into Game:init_game_object in order to create the custom
-	G.GAME.current_round.castle2_card variable that the above joker uses whenever a run starts.--]]
-local igo = Game.init_game_object
-function Game:init_game_object()
-	local ret = igo(self)
-	ret.current_round.castle2_card = { suit = 'Spades' }
-	return ret
-end
-
-
-
--- This is a part 2 of the above thing, to make the custom G.GAME variable change every round.
-function SMODS.current_mod.reset_game_globals(run_start)
-	-- The suit changes every round, so we use reset_game_globals to choose a suit.
-	G.GAME.current_round.castle2_card = { suit = 'Spades' }
-	local valid_castle_cards = {}
-	for _, v in ipairs(G.playing_cards) do
-		if not SMODS.has_no_suit(v) then -- Abstracted enhancement check for jokers being able to give cards additional enhancements
-			valid_castle_cards[#valid_castle_cards + 1] = v
-		end
-	end
-	if valid_castle_cards[1] then
-		local castle_card = pseudorandom_element(valid_castle_cards, pseudoseed('2cas' .. G.GAME.round_resets.ante))
-		G.GAME.current_round.castle2_card.suit = castle_card.base.suit
-	end
-end
-
--- TODO:
--- Have people proofread, make sure my overly long way of writing is actually legible or cut down to make sure it's legible.
-
-
-----------------------------------------------
-------------MOD CODE END----------------------
+-- if you're reading this go outside. get a shower.
