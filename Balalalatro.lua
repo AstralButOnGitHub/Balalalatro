@@ -568,8 +568,7 @@ SMODS.Joker {
 	end,
 	calculate = function(self, card, context)
 		if context.individual and context.cardarea == G.play then
-			local other_id = context.other_card:get_id()
-			if other_id > 10 and other_id < 14 then
+			if context.other_card:is_face() then
 				card.ability.extra.Xmult = card.ability.extra.Xmult + card.ability.extra.Xmult_mod
 
 				return {
@@ -1053,7 +1052,7 @@ SMODS.Joker {
 					end
 				end
 
-				if context.after and not context.blueprint then
+				if context.after and not context.blueprint and not context.retrigger_joker then
 					card.ability.extra.direction = (direction == "Leftmost") and "Rightmost" or "Leftmost"
 					return {
 						message = "Switch!",
