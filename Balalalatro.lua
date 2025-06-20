@@ -448,14 +448,12 @@ SMODS.Joker {
 		end
 	end,
 	add_to_deck = function(self, card, from_debuff)
-		if G.GAME.win_ante and not card.ability.extra.has_anted then
-			card.ability.extra.has_anted = true
+		if G.GAME.win_ante then
 			G.GAME.win_ante = G.GAME.win_ante * 2
 		end
 	end,
 	remove_from_deck = function(self, card, from_debuff)
-		if G.GAME.win_ante and card.ability.extra.has_anted then
-			card.ability.extra.has_anted = true
+		if G.GAME.win_ante then
 			G.GAME.win_ante = G.GAME.win_ante / 2
 		end
 	end
@@ -474,7 +472,8 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Br*tish Joker',
 		text = {
-			"Oi Tea And Crumpets Innit?"
+			"Oi Tea And Crumpets Innit?",
+			"DO NOT USE THIS CARD, IT BREAKS THE GAME."
 		}
 	},
 
@@ -500,8 +499,6 @@ SMODS.Joker {
 		G.SETTINGS.real_language = "fr"
 		init_localization()
 		G:set_language()
-
-
 	end
 }
 
@@ -554,7 +551,7 @@ SMODS.Joker {
 		text = {
 			"This Joker gains",
 			"{X:mult,C:white} X#1# {} Mult every time",
-			"a {E:2,C:attention}face card{} is played",
+			"a {C:attention}face card{} is played",
 			"{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)",
 		},
 	},
@@ -995,7 +992,7 @@ SMODS.Joker {
 
 			for i = 1, #jokers do
 				if jokers[i] == card then
-					other_joker = jokers[i + 1]
+					other_joker = (direction == "Leftmost") and jokers[1] or jokers[#jokers]
 					break
 				end
 			end
