@@ -79,7 +79,12 @@ SMODS.Atlas {
 	px = 71,
 	py = 95
 }
-
+SMODS.Atlas({
+	key = "modicon",
+	path = "modicon.png",
+	px = 32,
+	py = 32
+})
 
 -- Why I have to define this I have no clue!
 SMODS.current_mod.optional_features = {
@@ -119,6 +124,19 @@ SMODS.Sound{
 	path = 'splosh.ogg'
 }
 
+-- Testing Stuff
+local sounds = {'1', '2', '3', '4', 'five'}
+
+for _, sound in ipairs(sounds) do
+	SMODS.Sound{
+		key = sound,
+		path = 'sounds/' .. sound .. '.ogg'
+	}
+end
+
+
+
+
 SMODS.Seal {
 	name = "useless-seal",
 	key = "useless_seal",
@@ -146,76 +164,31 @@ SMODS.Seal {
 	end,
 }
 
-
-
-
-
-SMODS.Consumable {
-	key = 'tower',
-	set = 'Spectral',
-	pos = { x = 6, y = 1 },
-	config = { extra = { max_highlighted = 1, enh_key = 'm_stone' } },
-	loc_vars = function(self, info_queue, card)
-		info_queue[#info_queue + 1] = G.P_CENTERS[card.ability.extra.enh_key]
-		return { vars = { card.ability.extra.max_highlighted, localize { type = 'name_text', set = 'Enhanced', key = card.ability.extra.enh_key } } }
-	end,
-	use = function(self, card, area, copier)
-		G.E_MANAGER:add_event(Event({
-			trigger = 'after',
-			delay = 0.4,
-			func = function()
-				play_sound('tarot1')
-				card:juice_up(0.3, 0.5)
-				return true
-			end
-		}))
-		for i = 1, #G.hand.highlighted do
-			local percent = 1.15 - (i - 0.999) / (#G.hand.highlighted - 0.998) * 0.3
-			G.E_MANAGER:add_event(Event({
-				trigger = 'after',
-				delay = 0.15,
-				func = function()
-					G.hand.highlighted[i]:flip(); play_sound('card1', percent); G.hand.highlighted[i]:juice_up(0.3, 0.3); return true
-				end
-			}))
-		end
-		delay(0.2)
-		for i = 1, #G.hand.highlighted do
-			G.E_MANAGER:add_event(Event({
-				trigger = 'after',
-				delay = 0.1,
-				func = function()
-					G.hand.highlighted[i]:set_ability(G.P_CENTERS[card.ability.extra.enh_key]); return true
-				end
-			}))
-		end
-		for i = 1, #G.hand.highlighted do
-			local percent = 0.85 + (i - 0.999) / (#G.hand.highlighted - 0.998) * 0.3
-			G.E_MANAGER:add_event(Event({
-				trigger = 'after',
-				delay = 0.15,
-				func = function()
-					G.hand.highlighted[i]:flip()
-					play_sound('tarot2', percent, 0.6)
-					G.hand.highlighted[i]:juice_up(0.3, 0.3)
-					return true
-				end
-			}))
-		end
-		G.E_MANAGER:add_event(Event({
-			trigger = 'after',
-			delay = 0.2,
-			func = function()
-				G.hand:unhighlight_all()
-				return true
-			end
-		}))
-		delay(0.5)
-	end,
-	can_use = function(self, card)
-		return G.hand and #G.hand.highlighted > 0 and #G.hand.highlighted <= card.ability.extra.max_highlighted
-	end
+SMODS.Shader{
+	key = "saturate",
+	path = "saturate.fs",
 }
+
+SMODS.Edition {
+	key = 'saturated',
+	shader = 'balalalatro_saturate',
+	prefix_config = {
+		shader = false
+	},
+	loc_txt = {
+		label = 'Saturated',
+		name = 'Saturated',
+		text = {
+			'I dunno'
+		}
+	},
+	config = { mult = 10 },
+	in_shop = true,
+	weight = 14,
+	extra_cost = 3,
+	sound = { sound = "holo1", per = 1.2 * 1.58, vol = 0.4 },
+}
+
 
 
 
@@ -233,6 +206,8 @@ SMODS.Joker {
 			card.children.center:draw_shader('debuff', nil, card.ARGS.send_to_shader)
 		end
 	end,
+	no_collection = true,
+	in_pool = function(self) return false end,
 	config = { extra = { chips = 0, chip_gain = 15 } },
 	rarity = 1,
 	atlas = 'Jokers',
@@ -426,7 +401,7 @@ SMODS.Joker {
 		name = 'Astral Joker',
 		text = {
 			"Retriggers all {E:2,C:attention}Jokers{} twice",
-			"but doubles the {E:2,C:red}Winning Ante{}"
+			"but permanently doubles the {E:2,C:red}Winning Ante{}"
 		}
 	},
 
@@ -434,10 +409,11 @@ SMODS.Joker {
 	atlas = 'Jokers',
 	pos = { x = 5, y = 0 },
 	cost = 5,
+	blueprint_compat = true,
 
 	config = { extra = { x_mult = 4, has_anted = false } },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.x_mult, card.ability.extra.has_anted } }
+		return { vars = { card.ability.extra.x_mult } }
 	end,
 	calculate = function(self, card, context)
 
@@ -449,18 +425,130 @@ SMODS.Joker {
 	end,
 	add_to_deck = function(self, card, from_debuff)
 		if G.GAME.win_ante then
-			G.GAME.win_ante = G.GAME.win_ante * 2
-		end
-	end,
-	remove_from_deck = function(self, card, from_debuff)
-		if G.GAME.win_ante then
-			G.GAME.win_ante = G.GAME.win_ante / 2
+			G.GAME.win_ante = G.GAME.win_ante + 8
 		end
 	end
 }
 
 
+SMODS.Joker {
+	key = 'scopophobia',
+	loc_txt = {
+		name = 'Scopophobia',
+		text = {
+			"Gains {X:mult,C:white} X#2# {} Mult",
+			"per scored {C:attention}number card {C:inactive}(or ace)",
+			"Loses {X:mult,C:white} X#3# {} Mult",
+			"per scored {C:attention}face card{}",
+			"{C:inactive}(Currently {X:mult,C:white} X#1# {C:inactive} Mult)",
+		}
+	},
+	rarity = 1,
+	atlas = 'Jokers',
+	pos = { x = 15, y = 11 },
+	cost = 5,
+	blueprint_compat = true,
 
+	config = { extra = { Xmult = 1, Xmult_mod1 = 0.1, Xmult_mod5 = 0.5 } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.Xmult, card.ability.extra.Xmult_mod1, card.ability.extra.Xmult_mod5 } }
+	end,
+	calculate = function(self, card, context)
+		if context.individual and context.cardarea == G.play then
+			if context.other_card:is_face() then
+				card.ability.extra.Xmult = math.max(1, card.ability.extra.Xmult - card.ability.extra.Xmult_mod5)
+
+				return {
+					message = localize {
+						type = 'variable',
+						key = 'a_xmult',
+						vars = { card.ability.extra.Xmult }
+					}
+				}
+			else
+				card.ability.extra.Xmult = card.ability.extra.Xmult + card.ability.extra.Xmult_mod1
+
+				return {
+					message = localize {
+						type = 'variable',
+						key = 'a_xmult',
+						vars = { card.ability.extra.Xmult }
+					}
+				}
+			end
+		end
+
+		if context.joker_main then
+			return {
+				Xmult = card.ability.extra.Xmult
+			}
+		end
+	end
+}
+
+function StartsWith(str, start)
+	return string.sub(str, 1, #start) == start
+end
+
+function getResourceWithPrefix(s)
+	local results = {}
+	for k, v in pairs(G.P_CENTERS) do
+		if StartsWith(k, s) then
+			print(k)
+			table.insert(results, k)
+		end
+	end
+	return results
+end
+
+function getBalalalatro()
+	print("Getting a random fox joker...")
+	local allFoxJokers = getResourceWithPrefix("j_balalalatro")
+	print("Received list of " .. #allFoxJokers)
+
+	if #allFoxJokers == 0 then
+		print("No Balalalatro jokers found!")
+		return nil
+	end
+
+	local randomJoker = allFoxJokers[math.random(#allFoxJokers)]
+	print("Random joker selected: " .. randomJoker)
+	return randomJoker
+end
+
+SMODS.Booster {
+	key = "astral_pack",
+	loc_txt = {
+		name = "Astral Pack",
+		group_name = "Astral Pack",
+		text = {
+			"Choose {C:attention}#1#{} of up to",
+			"{C:attention}#2# {V:1}Balalalatro{} cards to"
+		}
+	},
+	config = { extra = 3, choose = 1 },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.choose, card.ability.extra, colours = {HEX("8ea4b3")} } }
+	end,
+	cost = 4,
+	atlas = "Jokers",
+	weight = 1.5,
+	pos = { x = 7, y = 1 },
+	draw_hand = false,
+	kind = "Joker",
+	create_card = function(self, card)
+		local balalalatro = getBalalalatro()
+		print(balalalatro)
+		local getCard = create_card("Joker", G.pack_cards, nil, nil, true, true, balalalatro, "Fox")
+		sendInfoMessage("creating cards for this pack", self.key)
+
+		return getCard
+	end,
+	ease_background_colour = function(self)
+		ease_colour(G.C.DYN_UI.MAIN, HEX("ea1f1f"))
+		ease_background_colour({ new_colour = HEX('27a4f7'), special_colour = HEX("ea1f1f"), contrast = 2 })
+	end
+}
 
 SMODS.Language{
 	key = 'test',
@@ -515,6 +603,8 @@ SMODS.Joker {
 			"ERROR: \"Unexpected Error\""
 		}
 	},
+	no_collection = true,
+	in_pool = function(self) return false end,
 
 	rarity = 1,
 	atlas = 'Jokers',
@@ -551,7 +641,7 @@ SMODS.Joker {
 		text = {
 			"This Joker gains",
 			"{X:mult,C:white} X#1# {} Mult every time",
-			"a {C:attention}face card{} is played",
+			"a {C:attention}face card{} is scored",
 			"{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)",
 		},
 	},
@@ -604,9 +694,9 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Nuclear Joker',
 		text = {
-			"Vaporizes neighboring {C:attention}Jokers{} (including {C:purple}Eternals{})",
-			"when your played {C:attention}poker hand{} is",
-			"your {C:attention}least played poker hand{}"
+			"When {C:attention}least played poker hand{} is played,",
+			"Vaporizes adjacent {C:attention}Jokers{} ({C:purple}Eternals{} included)",
+			"If not, {C:mult}+#1#{} Mult"
 		}
 	},
 
@@ -616,9 +706,9 @@ SMODS.Joker {
 	pos = { x = 9, y = 0 },
 	cost = 5,
 
-    config = { extra = { Xmult_gain = 0.2, Xmult = 1 } },
+    config = { extra = { mult = 20 } },
     loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.Xmult_gain, card.ability.extra.Xmult } }
+        return { vars = { card.ability.extra.mult } }
     end,
 calculate = function(self, card, context)
     if context.before and context.main_eval and not context.blueprint then
@@ -722,6 +812,8 @@ SMODS.Joker {
 		}
 	},
 	rarity = 1,
+	no_collection = true,
+	in_pool = function(self) return false end,
 	atlas = 'Jokers',
 	pos = { x = 10, y = 0 },
 	cost = 5,
@@ -822,7 +914,7 @@ SMODS.Seal {
 		name = 'Sussy Seal',
 		text = {
 			'When Hand is Played',
-			'1 in 8 chance to become {C:red}Useless {} this card'
+			'1 in 8 chance for this card to become {C:red}Useless{}'
 		}
 	},
 	loc_vars = function(self, info_queue)
@@ -900,6 +992,64 @@ SMODS.Consumable {
 	end
 }
 
+SMODS.Consumable {
+	set = "Tarot",
+	key = "wheel_of_jimbo",
+	loc_txt = {
+		name = 'Wheel Of Jimbo',
+		text = {
+			"Take a spin!",
+			"Nothing could go wrong!!"
+		}
+	},
+	cost = 4,
+	atlas = "Jokers",
+	pos = {x=2, y=1},
+
+	use = function(self, card, area, copier)
+		local functions = {
+			-- GOOD OPTIONS
+
+			function()
+				print("Give $10")
+				G.E_MANAGER:add_event(Event({
+					trigger = 'after',
+					delay = 0.4,
+					func = function()
+						play_sound('timpani')
+						card:juice_up(0.3, 0.5)
+						ease_dollars(G.GAME.dollars, true)
+						G.GAME.dollars = G.GAME.dollars + 10
+						return true
+					end
+				}))
+				delay(0.6)
+			end,
+			function()
+				print("lower Winning ante by 1")
+			end,
+			function()
+				print("4 random cards get an enhancement")
+			end,
+
+
+
+			-- BAD OPTIONS
+			--insert
+		}
+
+		local chosen = functions[math.random(1, #functions)]
+		chosen()
+
+	end,
+
+
+
+	can_use = function(self, card)
+		return true
+	end
+}
+
 
 
 
@@ -959,6 +1109,88 @@ SMODS.Consumable {
 --	end
 --}
 
+SMODS.Enhancement {
+	name = "goop",
+	key = "goop",
+	badge_colour = HEX("b2112a"),
+	atlas = "Jokers",
+	pos = {x=0, y=4},
+	loc_txt = {
+		label = 'Goop\'ed Card',
+		name = 'Goop\'ed Card',
+		text = {
+			'Covers the Suit and Rank',
+			'but Retriggers this',
+			'card {C:attention}#1#{} time',
+
+		}
+	},
+	replace_base_card = true,
+	no_rank = true,
+	no_suit = true,
+
+	config = { extra = { retriggers = 1 } },
+
+	calculate = function(self, card, context)
+		if context.repetition then
+			local retriggers = (card.ability.extra and card.ability.extra.retriggers) or 0
+			return {
+				repetitions = retriggers
+			}
+		end
+		return nil
+	end,
+
+	loc_vars = function(self, info_queue, card)
+		return { vars = { self.config.extra.retriggers } }
+	end,
+}
+
+SMODS.Joker {
+	key = 'graffiti',
+	loc_txt = {
+		name = 'Graffiti Joker',
+		text = {
+			"All played {C:attention}cards{}",
+			"become {C:attention}Goop'ed{} cards",
+			"when scored",
+		}
+	},
+	rarity = 1,
+	atlas = 'Jokers',
+	pos = { x = 14, y = 0 },
+	cost = 2,
+	calculate = function(self, card, context)
+
+		if context.before and context.main_eval and not context.blueprint then
+
+			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+				for i,v in ipairs(context.scoring_hand) do
+					v:flip()
+				end
+				return true
+			end}))
+
+			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+				for i,v in ipairs(context.scoring_hand) do
+					v:set_ability('m_balalalatro_goop', nil, true)
+					play_sound('balalalatro_splosh', 1, 0.55)
+					v:juice_up()
+				end
+				return true
+			end}))
+
+			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+				for i,v in ipairs(context.scoring_hand) do
+					v:flip()
+				end
+				return true
+			end}))
+
+		end
+	end
+}
+
 -- sketched (this is for me searching sketched instead of etched because I'm stupid.)
 SMODS.Joker {
 	key = "etched",
@@ -968,7 +1200,7 @@ SMODS.Joker {
 			"Copies the ability",
 			"of leftmost or",
 			"rightmost {C:attention}Joker{}.",
-			"{s:0.8}Direction switches after each use.{}",
+			"{s:0.8}Direction switches after each hand.{}",
 			"{C:inactive}(Currently {C:attention}#2#{C:inactive})"
 		}
 	},
@@ -1052,11 +1284,15 @@ SMODS.Joker {
 					end
 				end
 
+
+
 				if context.after and not context.blueprint and not context.retrigger_joker then
-					card.ability.extra.direction = (direction == "Leftmost") and "Rightmost" or "Leftmost"
-					return {
-						message = "Switch!",
-					}
+					G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+						card.ability.extra.direction = (direction == "Leftmost") and "Rightmost" or "Leftmost"
+						return {
+							message = "Switch!",
+						}
+					end}))
 				end
 
 				return ret
@@ -1087,7 +1323,7 @@ SMODS.Atlas {
 
 SMODS.Suit {
    key = "banana_suit",
-   card_key = "S",
+   card_key = "B",
    loc_txt = {
 	   singular = 'Banan',
 	   plural = 'Banans',
@@ -1108,25 +1344,7 @@ SMODS.Suit {
 
 
 
-SMODS.Seal {
-	name = "goop-seal",
-	key = "goop_seal",
-	badge_colour = HEX("b2112a"),
-	atlas = "Jokers",
-	pos = {x=0, y=4},
-	loc_txt = {
-		label = 'Goop Seal',
-		name = 'Goop Seal',
-		text = {
-			'Covers the Suit and Rank',
-			'but gives {C:red,s:1.1}+#1#{} Mult'
-		}
-	},
-	config = { mult = 4 },
-	loc_vars = function(self, info_queue, card)
-		return { vars = { self.config.mult } }
-	end,
-}
+
 
 SMODS.Challenge {
 	key = 'cat_challenge',
@@ -1186,86 +1404,57 @@ SMODS.Challenge {
 	unlocked = true
 }
 
-
-
-
-SMODS.Joker {
-	key = 'paint',
-	loc_txt = {
-		name = 'Painted Joker',
-		text = {
-			"test"
+SMODS.Challenge {
+	key = 'banan_challenge',
+	loc_txt = 'Banan.',
+	jokers = {
+		{ id = 'j_gros_michel' },
+		{ id = 'j_cavendish' }
+	},
+	deck = {
+		type = 'Challenge Deck',
+		cards = {
+			-- Aces
+			{ s = 'balalalatro_B', r = 'A' }, { s = 'balalalatro_B', r = 'A' }, { s = 'balalalatro_B', r = 'A' }, { s = 'balalalatro_B', r = 'A' },
+			-- 2s
+			{ s = 'balalalatro_B', r = '2' }, { s = 'balalalatro_B', r = '2' }, { s = 'balalalatro_B', r = '2' }, { s = 'balalalatro_B', r = '2' },
+			-- 3s
+			{ s = 'balalalatro_B', r = '3' }, { s = 'balalalatro_B', r = '3' }, { s = 'balalalatro_B', r = '3' }, { s = 'balalalatro_B', r = '3' },
+			-- 4s
+			{ s = 'balalalatro_B', r = '4' }, { s = 'balalalatro_B', r = '4' }, { s = 'balalalatro_B', r = '4' }, { s = 'balalalatro_B', r = '4' },
+			-- 5s
+			{ s = 'balalalatro_B', r = '5' }, { s = 'balalalatro_B', r = '5' }, { s = 'balalalatro_B', r = '5' }, { s = 'balalalatro_B', r = '5' },
+			-- 6s
+			{ s = 'balalalatro_B', r = '6' }, { s = 'balalalatro_B', r = '6' }, { s = 'balalalatro_B', r = '6' }, { s = 'balalalatro_B', r = '6' },
+			-- 7s
+			{ s = 'balalalatro_B', r = '7' }, { s = 'balalalatro_B', r = '7' }, { s = 'balalalatro_B', r = '7' }, { s = 'balalalatro_B', r = '7' },
+			-- 8s
+			{ s = 'balalalatro_B', r = '8' }, { s = 'balalalatro_B', r = '8' }, { s = 'balalalatro_B', r = '8' }, { s = 'balalalatro_B', r = '8' },
+			-- 9s
+			{ s = 'balalalatro_B', r = '9' }, { s = 'balalalatro_B', r = '9' }, { s = 'balalalatro_B', r = '9' }, { s = 'balalalatro_B', r = '9' },
+			-- 10s
+			{ s = 'balalalatro_B', r = 'T' }, { s = 'balalalatro_B', r = 'T' }, { s = 'balalalatro_B', r = 'T' }, { s = 'balalalatro_B', r = 'T' },
+			-- Jacks
+			{ s = 'balalalatro_B', r = 'J' }, { s = 'balalalatro_B', r = 'J' }, { s = 'balalalatro_B', r = 'J' }, { s = 'balalalatro_B', r = 'J' },
+			-- Queens
+			{ s = 'balalalatro_B', r = 'Q' }, { s = 'balalalatro_B', r = 'Q' }, { s = 'balalalatro_B', r = 'Q' }, { s = 'balalalatro_B', r = 'Q' },
+			-- Kings
+			{ s = 'balalalatro_B', r = 'K' }, { s = 'balalalatro_B', r = 'K' }, { s = 'balalalatro_B', r = 'K' }, { s = 'balalalatro_B', r = 'K' },
 		}
 	},
-	config = { extra = { chips = 0, chip_gain = 15 } },
-	loc_vars = function(self, info_queue, card)
-		info_queue[#info_queue + 1] = G.P_CENTERS.m_balalalatro_goop_seal
-		return { vars = { card.ability.extra.chips, card.ability.extra.chip_gain } }
-	end,
-	rarity = 1,
-	atlas = 'Jokers',
-	pos = { x = 11, y = 0 },
-	cost = 2,
-	calculate = function(self, card, context)
-
-        if context.before and context.main_eval and not context.blueprint then
-
-			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-				for i,v in ipairs(context.scoring_hand) do
-					v:flip()
-				end
-				return true
-			end}))
-
-			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-				for i,v in ipairs(context.scoring_hand) do
-					v:set_seal('balalalatro_goop_seal', true)
-					play_sound('balalalatro_splosh', 1, 0.55)
-					v:juice_up()
-				end
-				return true
-			end}))
-
-			G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-				for i,v in ipairs(context.scoring_hand) do
-					v:flip()
-				end
-				return true
-			end}))
-
-		end
-	end
+	rules = {
+		modifiers = {
+			{ id = "joker_slots", value = 10 },
+		},
+	},
+	unlocked = true
 }
 
 
-SMODS.Enhancement {
-    key = 'repeat',
-
-    pos = { x = 5, y = 1 },
-    loc_txt = {
-        name = "Repeat",
-        text = {
-            "Triggers {C:attention}#1#{} extra times"
-        }
-    },
-    config = { extra = { retriggers = 4 } },
-
-    calculate = function(self, card, context)
-        if context.repetition then
-            local retriggers = (card.ability.extra and card.ability.extra.retriggers) or 0
-            return {
-                repetitions = retriggers
-            }
-        end
-        return nil
-    end,
-
-    loc_vars = function(self, info_queue, card)
-        return { vars = { self.config.extra.retriggers } }
-    end,
 
 
-}
+
+
 
 
 -- if you're reading this go outside. get a shower.
