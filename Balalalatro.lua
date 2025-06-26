@@ -179,16 +179,24 @@ SMODS.Edition {
 		label = 'Saturated',
 		name = 'Saturated',
 		text = {
-			'I dunno'
+			'Retrigger this',
+			'card {C:attention}2{} times'
 		}
 	},
-	config = { mult = 10 },
 	in_shop = true,
 	weight = 14,
 	extra_cost = 3,
 	sound = { sound = "holo1", per = 1.2 * 1.58, vol = 0.4 },
-}
 
+
+	calculate = function(self, card, context)
+		if context.retrigger_joker_check and context.other_card == card then
+			return {
+				repetitions = 2,
+			}
+		end
+	end
+}
 
 
 
