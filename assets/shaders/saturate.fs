@@ -21,7 +21,7 @@ vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
 
     float adjusted_dissolve = (dissolve*dissolve*(3.-2.*dissolve))*1.02 - 0.01; //Adjusting 0.0-1.0 to fall to -0.1 - 1.1 scale so the mask does not pause at extreme values
 
-	float t = time * 10.0 + 2003.;
+	float t = (time / 0.000001) + 2003.;
 	vec2 floored_uv = (floor((uv*texture_details.ba)))/max(texture_details.b, texture_details.a);
     vec2 uv_scaled_centered = (floored_uv - 0.5) * 2.3 * max(texture_details.b, texture_details.a);
 
@@ -96,18 +96,20 @@ vec4 HSL(vec4 c)
 
 vec4 saturate_color(vec4 color, float saturation_boost)
 {
-    float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114)); // Luminance
-    vec3 saturated = mix(vec3(gray), color.rgb, 1.0 + saturation_boost);
+    float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+    float clamped_boost = max(saturation_boost, 0.0);
+    vec3 saturated = mix(vec3(gray), color.rgb, 1.0 + clamped_boost);
     return vec4(saturated, color.a);
 }
+
 
 vec4 effect( vec4 colour, Image texture, vec2 texture_coords, vec2 screen_coords )
 {
     vec4 tex = Texel(texture, texture_coords);
     vec2 uv = (((texture_coords) * (image_details)) - texture_details.xy * texture_details.ba) / texture_details.ba;
 
-    // Example saturation boost control: you can make this dynamic if needed
-    float saturation_boost = saturate.x * 4;
+    // I DON'T WANT TO USE SATURATE :sob:
+    float saturation_boost = (saturate.x * 0.000001) + 8.0;
 
     tex = saturate_color(tex, saturation_boost);
 
@@ -130,8 +132,11 @@ vec4 position( mat4 transform_projection, vec4 vertex_position )
     }
     float mid_dist = length(vertex_position.xy - 0.5*love_ScreenSize.xy)/length(love_ScreenSize.xy);
     vec2 mouse_offset = (vertex_position.xy - mouse_screen_pos.xy)/screen_scale;
-    float scale = 0.2*(-0.03 - 0.3*max(0., 0.3-mid_dist)) *hovering*(length(mouse_offset)*length(mouse_offset))/(2. -mid_dist);
+    float scale = 0.2*(-0.03 - 0.3*max(0., 0.3-mid_dist))
+                *hovering*(length(mouse_offset)*length(mouse_offset))/(2. -mid_dist);
 
     return transform_projection * vertex_position + vec4(0,0,0,scale);
 }
 #endif
+
+
