@@ -71,6 +71,10 @@ SMODS.current_mod.extra_tabs = function()
 end
 
 
+if JokerDisplay then
+	SMODS.load_file("joker_display_definitions.lua")()
+end
+
 SMODS.Atlas {
 	key = "Jokers",
 	path = {
@@ -381,17 +385,17 @@ SMODS.Joker {
 	cost = 5,
 	blueprint_compat = true,
 
-    config = { extra = { x_mult = 4, size = 3 } },
+	config = { extra = { x_mult = 4, size = 3 } },
 	loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
-    end,
+		return { vars = { card.ability.extra.x_mult, card.ability.extra.size } }
+	end,
 	calculate = function(self, card, context)
-        if context.joker_main and #context.full_hand > card.ability.extra.size then
+		if context.joker_main and #context.full_hand > card.ability.extra.size then
 			return {
-                x_mult = card.ability.extra.x_mult
-            }
-        end
-    end
+				x_mult = card.ability.extra.x_mult
+			}
+		end
+	end
 }
 
 SMODS.Joker {
@@ -488,10 +492,11 @@ SMODS.Joker {
 SMODS.Joker {
 	key = "pi",
 	loc_txt = {
-		name = 'Pi (e)',
+		name = 'Pi(e)',
 		text = {
-			"Each scored {C:attention}number card",
-			"{C:inactive}(Ace - 9){} gives {C:mult}+#1#{} Mult",
+			"Played {C:attention}digit cards",
+			"{C:inactive}(Ace - 9){} give",
+			"{C:mult}+#1#{} Mult when scored"
 		},
 	},
 	blueprint_compat = true,
@@ -544,79 +549,73 @@ function getBalalalatro()
 	return randomJoker
 end
 
-SMODS.Booster {
-	key = "astral_pack",
-	loc_txt = {
-		name = "Astral Pack",
-		group_name = "Astral Pack",
-		text = {
-			"Choose {C:attention}#1#{} of up to",
-			"{C:attention}#2# {V:1}Balalalatro{} cards to"
-		}
-	},
-	config = { extra = 3, choose = 1 },
-	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.choose, card.ability.extra, colours = {HEX("8ea4b3")} } }
-	end,
-	cost = 4,
-	atlas = "Jokers",
-	weight = 1.5,
-	pos = { x = 7, y = 1 },
-	draw_hand = false,
-	kind = "Joker",
-	create_card = function(self, card)
-		local balalalatro = getBalalalatro()
-		print(balalalatro)
-		local getCard = create_card("Joker", G.pack_cards, nil, nil, true, true, balalalatro, "Fox")
-		sendInfoMessage("creating cards for this pack", self.key)
-
-		return getCard
-	end,
-	ease_background_colour = function(self)
-		ease_colour(G.C.DYN_UI.MAIN, HEX("ea1f1f"))
-		ease_background_colour({ new_colour = HEX('27a4f7'), special_colour = HEX("ea1f1f"), contrast = 2 })
-	end
-}
+-- SMODS.Booster {
+--	key = "astral_pack",
+--	loc_txt = {
+--		name = "Astral Pack",
+--		group_name = "Astral Pack",
+--		text = {
+--			"Choose {C:attention}#1#{} of up to",
+--			"{C:attention}#2# {V:1}Balalalatro{} cards to"
+--		}
+--	},
+--	config = { extra = 3, choose = 1 },
+--	loc_vars = function(self, info_queue, card)
+--		return { vars = { card.ability.choose, card.ability.extra, colours = {HEX("8ea4b3")} } }
+--	end,
+--	cost = 4,
+--	atlas = "Jokers",
+--	weight = 1.5,
+--	pos = { x = 7, y = 1 },
+--	draw_hand = false,
+--	kind = "Joker",
+--	create_card = function(self, card)
+--		local balalalatro = getBalalalatro()
+--		print(balalalatro)
+--		local getCard = create_card("Joker", G.pack_cards, nil, nil, true, true, balalalatro, "Fox")
+--		sendInfoMessage("creating cards for this pack", self.key)
+--
+--		return getCard
+--	end,
+--	ease_background_colour = function(self)
+--		ease_colour(G.C.DYN_UI.MAIN, HEX("ea1f1f"))
+--		ease_background_colour({ new_colour = HEX('27a4f7'), special_colour = HEX("ea1f1f"), contrast = 2 })
+--	end
+--}
 
 SMODS.Language{
 	key = 'test',
 	label = 'test.lua'
 }
 
-SMODS.Joker {
-	key = 'british',
-	loc_txt = {
-		name = 'Br*tish Joker',
-		text = {
-			"Oi Tea And Crumpets Innit?",
-			"DO NOT USE THIS CARD, IT BREAKS THE GAME."
-		}
-	},
-
-	rarity = 1,
-	atlas = 'Jokers',
-	pos = { x = 6, y = 0 },
-	cost = 5,
-
-	config = { extra = { x_mult = 4, size = 3 } },
-	loc_vars = function(self, info_queue, card)
-
-		return {
-			vars = {
-				card.ability.extra.x_mult, card.ability.extra.size
-			}
-		}
-	end,
-	calculate = function(self, card, context)
-
-		G:set_language()
-		init_localization()
-		G.SETTINGS.language = "fr"
-		G.SETTINGS.real_language = "fr"
-		init_localization()
-		G:set_language()
-	end
-}
+-- SMODS.Joker {
+--	key = 'british',
+--	loc_txt = {
+--		name = 'Br*tish Joker',
+--		text = {
+--			"Oi Tea And Crumpets Innit?",
+--			"DO NOT USE THIS CARD, IT BREAKS THE GAME."
+--		}
+--	},
+--
+--	rarity = 1,
+--	atlas = 'Jokers',
+--	pos = { x = 6, y = 0 },
+--	cost = 5,
+--
+--	config = { extra = { x_mult = 4, size = 3 } },
+--	loc_vars = function(self, info_queue, card)
+--
+--		return {
+--			vars = {
+--				card.ability.extra.x_mult, card.ability.extra.size
+--			}
+--		}
+--	end,
+--	calculate = function(self, card, context)
+--
+--	end
+--}
 
 
 
@@ -734,103 +733,103 @@ SMODS.Joker {
 
 
 
-SMODS.Joker {
-	key = 'nuclear',
-	loc_txt = {
-		name = 'Nuclear Joker',
-		text = {
-			"When {C:attention}least played poker hand{} is played,",
-			"Vaporizes adjacent {C:attention}Jokers{} ({C:purple}Eternals{} included)",
-			"If not, {C:mult}+#1#{} Mult"
-		}
-	},
-
-
-	rarity = 1,
-	atlas = 'Jokers',
-	pos = { x = 9, y = 0 },
-	cost = 5,
-
-    config = { extra = { mult = 20 } },
-    loc_vars = function(self, info_queue, card)
-        return { vars = { card.ability.extra.mult } }
-    end,
-calculate = function(self, card, context)
-    if context.before and context.main_eval and not context.blueprint then
-        local scoring_name = context.scoring_name
-        local scoring_played = (G.GAME.hands[scoring_name].played or 0) - 1
-
-        local least_played = math.huge
-        local tied_least = {}
-
-        for k, v in pairs(G.GAME.hands) do
-            if v.visible then
-                local played = v.played or 0
-                if k == scoring_name then played = scoring_played end
-
-                if played < least_played then
-                    least_played = played
-                    tied_least = {k}
-                elseif played == least_played then
-                    table.insert(tied_least, k)
-                end
-            end
-        end
-
-        G.GAME.current_round.least_played_poker_hands = tied_least
-
-        local is_least = false
-        for _, name in ipairs(tied_least) do
-            if name == scoring_name then
-                is_least = true
-                break
-            end
-        end
-
-        local l_joker, r_joker = nil, nil
-        for i = 1, #G.jokers.cards do
-            if G.jokers.cards[i] == card then
-                if i > 1 then l_joker = G.jokers.cards[i - 1] end
-                if i < #G.jokers.cards then r_joker = G.jokers.cards[i + 1] end
-                break
-            end
-        end
-
-        if is_least then
-            local destroyed = false
-
-            if l_joker then
-                SMODS.destroy_cards(l_joker)
-                destroyed = true
-            end
-            if r_joker then
-                SMODS.destroy_cards(r_joker)
-                destroyed = true
-            end
-
-            if destroyed then
-                play_sound('balalalatro_ah', 1, 0.55)
-                return {
-                    message = "Boom! Neighboring Joker(s) Destroyed!"
-                }
-            else
-                return {
-                    message = "No Neighboring Jokers to Destroy!"
-                }
-            end
-        end
-		return {
-
-		}
-    end
-end
-
-
-
-
-
-
-}
+-- SMODS.Joker {
+--	key = 'nuclear',
+--	loc_txt = {
+--		name = 'Nuclear Joker',
+--		text = {
+--			"When {C:attention}least played poker hand{} is played,",
+--			"Vaporizes adjacent {C:attention}Jokers{} ({C:purple}Eternals{} included)",
+--			"If not, {C:mult}+#1#{} Mult"
+--		}
+--	},
+--
+--
+--	rarity = 1,
+--	atlas = 'Jokers',
+--	pos = { x = 9, y = 0 },
+--	cost = 5,
+--
+--    config = { extra = { mult = 20 } },
+--    loc_vars = function(self, info_queue, card)
+--        return { vars = { card.ability.extra.mult } }
+--    end,
+--calculate = function(self, card, context)
+--    if context.before and context.main_eval and not context.blueprint then
+--        local scoring_name = context.scoring_name
+--        local scoring_played = (G.GAME.hands[scoring_name].played or 0) - 1
+--
+--        local least_played = math.huge
+--        local tied_least = {}
+--
+--        for k, v in pairs(G.GAME.hands) do
+--            if v.visible then
+--                local played = v.played or 0
+--                if k == scoring_name then played = scoring_played end
+--
+--                if played < least_played then
+--                    least_played = played
+--                    tied_least = {k}
+--                elseif played == least_played then
+--                    table.insert(tied_least, k)
+--                end
+--            end
+--        end
+--
+--        G.GAME.current_round.least_played_poker_hands = tied_least
+--
+--        local is_least = false
+--        for _, name in ipairs(tied_least) do
+--            if name == scoring_name then
+--                is_least = true
+--                break
+--            end
+--        end
+--
+--        local l_joker, r_joker = nil, nil
+--        for i = 1, #G.jokers.cards do
+--            if G.jokers.cards[i] == card then
+--                if i > 1 then l_joker = G.jokers.cards[i - 1] end
+--                if i < #G.jokers.cards then r_joker = G.jokers.cards[i + 1] end
+--                break
+--            end
+--        end
+--
+--        if is_least then
+--            local destroyed = false
+--
+--            if l_joker then
+--                SMODS.destroy_cards(l_joker)
+--                destroyed = true
+--            end
+--            if r_joker then
+--                SMODS.destroy_cards(r_joker)
+--                destroyed = true
+--            end
+--
+--            if destroyed then
+--                play_sound('balalalatro_ah', 1, 0.55)
+--                return {
+--                    message = "Boom! Neighboring Joker(s) Destroyed!"
+--                }
+--            else
+--                return {
+--                    message = "No Neighboring Jokers to Destroy!"
+--                }
+--            end
+--        end
+--		return {
+--
+--		}
+--    end
+--end
+--
+--
+--
+--
+--
+--
+--}
 
 
 
@@ -1249,7 +1248,6 @@ SMODS.Joker {
 	end,
 }
 
--- sketched (this is for me searching sketched instead of etched because I'm stupid.)
 SMODS.Joker {
 	key = "etched",
 	loc_txt = {
@@ -1262,7 +1260,7 @@ SMODS.Joker {
 			"{C:inactive}(Currently {C:attention}#2#{C:inactive})"
 		}
 	},
-	blueprint_compat = false,
+	blueprint_compat = true,
 	atlas = "Jokers",
 	pos = { x = 12, y = 0 },
 	config = { extra = { direction = "Leftmost" } },
@@ -1334,29 +1332,126 @@ SMODS.Joker {
 				target = nil
 			end
 
-				local ret
-				if target then
-					ret = SMODS.blueprint_effect(card, target, context)
-					if ret then
-						ret.colour = G.C.RED
-					end
+			local ret
+			if target then
+				ret = SMODS.blueprint_effect(card, target, context)
+				if ret then
+					ret.colour = G.C.RED
 				end
-
-
-
-				if context.after and not context.blueprint and not context.retrigger_joker then
-					G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
-						card.ability.extra.direction = (direction == "Leftmost") and "Rightmost" or "Leftmost"
-						return {
-							message = "Switch!",
-						}
-					end}))
-				end
-
-				return ret
 			end
+
+
+
+			if context.after and not context.blueprint and not context.retrigger_joker then
+				G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.03, func = function(i,v)
+					card.ability.extra.direction = (direction == "Leftmost") and "Rightmost" or "Leftmost"
+					card:juice_up()
+					play_sound('generic1', 1, 0.55)
+
+					return {
+						message = "Switch!",
+					}
+				end}))
+			end
+
+			return ret
+		end
 	end
 }
+
+SMODS.Joker {
+	key = 'morons',
+	loc_txt = {
+		name = 'ALL MY PLAYERS ARE MORONS',
+		text = {
+			"this Joker gains",
+			"{X:mult,C:white} X#1# {} Mult for each",
+			"{C:attention}consecutively{} played poker hand",
+			"{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)",
+		}
+	},
+
+	rarity = 1,
+	atlas = 'Jokers',
+	pos = { x = 0, y = 6 },
+	cost = 5,
+	blueprint_compat = true,
+
+	config = { extra = { Xmult = 1, Xmult_mod = 0.1, last_hand = nil } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.Xmult_mod, card.ability.extra.Xmult } }
+	end,
+	calculate = function(self, card, context)
+		if context.before and context.main_eval and not context.blueprint then
+			local last = card.ability.extra.last_hand
+			local current = context.scoring_name
+
+			if last and last == current then
+				card.ability.extra.Xmult = card.ability.extra.Xmult + card.ability.extra.Xmult_mod
+			elseif last and last ~= current then
+				card.ability.extra.Xmult = 1
+
+				return {
+					message = localize('k_reset')
+				}
+			end
+
+			card.ability.extra.last_hand = current
+		end
+
+		if context.joker_main then
+			return {
+				xmult = card.ability.extra.Xmult
+			}
+		end
+	end
+
+}
+
+SMODS.Joker {
+	key = 'areyousure',
+	loc_txt = {
+		name = 'Are you sure?',
+		text = {
+			"This Joker gains",
+			"{X:mult,C:white} X#1# {} Mult every time",
+			"a {C:attention}Booster Pack{} is skipped",
+			"{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)",
+		}
+	},
+
+	rarity = 1,
+	atlas = 'Jokers',
+	pos = { x = 1, y = 6 },
+	cost = 5,
+	blueprint_compat = true,
+
+	config = { extra = { Xmult = 1, Xmult_mod = 0.1, last_hand = nil } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.Xmult_mod, card.ability.extra.Xmult } }
+	end,
+	calculate = function(self, card, context)
+		if context.skipping_booster and not context.blueprint then
+			card.ability.extra.Xmult = card.ability.extra.Xmult + card.ability.extra.Xmult_mod
+			return {
+				message = localize {
+					type = 'variable',
+					key = 'a_xmult',
+					vars = { card.ability.extra.Xmult }
+				},
+				colour = G.C.RED,
+			}
+		end
+		if context.joker_main then
+			return {
+				Xmult = card.ability.extra.Xmult
+			}
+		end
+
+	end
+
+}
+
 
 
 
@@ -1421,17 +1516,6 @@ SMODS.Challenge {
 	jokers = {
 		{
 			id = 'j_balalalatro_useless', eternal=true
-		}
-	},
-	unlocked = true
-}
-
-SMODS.Challenge {
-	key = 'nuclear_challenge',
-	loc_txt = 'Nuclear Family',
-	jokers = {
-		{
-			id = 'j_balalalatro_nuclear', eternal=true,
 		}
 	},
 	unlocked = true
