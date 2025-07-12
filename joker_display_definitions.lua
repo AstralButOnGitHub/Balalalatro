@@ -121,3 +121,17 @@ jd_def["j_balalalatro_pi"] = {
         card.joker_display_values.mult = mult
     end
 }
+
+jd_def["j_balalalatro_disco"] = {
+    text = {
+        { text = "+", colour = G.C.MULT },
+        { ref_table = "card.ability.extra", ref_value = "mult", colour = G.C.MULT, retrigger_type = "mult" },
+        { text = " +", colour = G.C.CHIPS },
+        { ref_table = "card.ability.extra", ref_value = "chips",  colour = G.C.CHIPS,  retrigger_type = "mult" }
+    },
+    reminder_text = {
+        { text = "(" },
+        { ref_table = "card.joker_display_values", ref_value = "localized_text", colour = lighten(G.C.SUITS["Clubs"], 0.35) },
+        { text = ")" }
+    }
+}

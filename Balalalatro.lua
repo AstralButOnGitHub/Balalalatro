@@ -83,6 +83,22 @@ SMODS.Atlas {
 	px = 71,
 	py = 95
 }
+SMODS.Atlas {
+	key = "Wide",
+	path = {
+		['default'] = 'Wide.png'
+	},
+	px = 142,
+	py = 95
+}
+SMODS.Atlas {
+	key = "Plush",
+	path = {
+		['default'] = 'Plush.png'
+	},
+	px = 412,
+	py = 550
+}
 SMODS.Atlas({
 	key = "modicon",
 	path = "modicon.png",
@@ -152,7 +168,7 @@ SMODS.Edition {
 			'{C:red}Debuffs{} this card'
 		}
 	},
-	in_shop = true,
+	in_shop = false,
 	weight = 14,
 	extra_cost = 3,
 	sound = { sound = "cancel", per = 1.2 * 1.58, vol = 0.4 },
@@ -380,8 +396,7 @@ SMODS.Joker {
 	display_size = { w = 142, h = 95 },
 --	pixel_size = { w = 142, h = 95 },
 	rarity = 1,
-	atlas = 'Jokers',
-	pos = { x = 4, y = 0 },
+	atlas = 'Wide',
 	cost = 5,
 	blueprint_compat = true,
 
@@ -1359,6 +1374,59 @@ SMODS.Joker {
 	end
 }
 
+
+SMODS.Joker {
+	key = 'disco',
+	loc_txt = {
+		name = 'Disco Joker',
+		text = {
+			"this Joker gains",
+			"{C:mult}+#1#{} Mult and {C:chips}+#2#{} Chips",
+			"for each scored",
+			"{C:clubs}Clubs{} card, resets",
+			"when {C:attention}Boss Blind{} is defeated",
+			"{C:inactive}(Currently {C:mult}+#3#{} Mult, {C:chips}+#4#{} Chips)",
+		}
+	},
+	rarity = 1,
+	atlas = 'Jokers',
+	pos = { x = 8, y = 3 },
+	cost = 5,
+	blueprint_compat = true,
+
+	config = { extra = { mult_mod = 7, chips_mod = 4, mult = 0, chips = 0 } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.mult_mod, card.ability.extra.chips_mod, card.ability.extra.mult, card.ability.extra.chips } }
+	end,
+	calculate = function(self, card, context)
+		if context.individual and context.cardarea == G.play and context.other_card:is_suit("Clubs") then
+			card.ability.extra.mult = card.ability.extra.mult + card.ability.extra.mult_mod
+			card.ability.extra.chips = card.ability.extra.chips + card.ability.extra.chips_mod
+
+			return {
+				message = localize('k_upgrade_ex'),
+				message_card = card
+			}
+		end
+		if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
+			if G.GAME.blind.boss and (card.ability.extra.mult > 0 or card.ability.extra.chips > 0) then
+				card.ability.extra.mult = 0
+				card.ability.extra.chips = 0
+				return {
+					message = localize('k_reset'),
+					colour = G.C.RED
+				}
+			end
+		end
+		if context.joker_main then
+			return {
+				mult = card.ability.extra.mult,
+				chips = card.ability.extra.chips
+			}
+		end
+	end
+}
+
 SMODS.Joker {
 	key = 'morons',
 	loc_txt = {
@@ -1385,19 +1453,24 @@ SMODS.Joker {
 		if context.before and context.main_eval and not context.blueprint then
 			local last = card.ability.extra.last_hand
 			local current = context.scoring_name
+			print(last)
+			print(current)
 
 			if last and last == current then
 				card.ability.extra.Xmult = card.ability.extra.Xmult + card.ability.extra.Xmult_mod
 			elseif last and last ~= current then
 				card.ability.extra.Xmult = 1
+			end
 
+			card.ability.extra.last_hand = current
+
+			if last and last ~= current then
 				return {
 					message = localize('k_reset')
 				}
 			end
-
-			card.ability.extra.last_hand = current
 		end
+
 
 		if context.joker_main then
 			return {
@@ -1452,7 +1525,38 @@ SMODS.Joker {
 
 }
 
+SMODS.Joker {
+	key = 'plush',
+	loc_txt = {
+		name = 'Plush Joker',
+		text = {
+			"This Joker's {C:mult}Mult{} becomes",
+			"1/100th of The {C:attention}Final Score",
+			"{C:inactive}(Currently {C:mult}+#1#{} Mult)"
+		}
+	},
+	rarity = 4,
+	atlas = 'Plush',
+	pos = { x = 1, y = 0 },
+	soul_pos = { x = 0, y = 0 },
+	cost = 30,
+	blueprint_compat = true,
 
+	config = { extra = { mult = 4, size = 3 } },
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.mult, card.ability.extra.size } }
+	end,
+	calculate = function(self, card, context)
+		if context.after then
+			local SCORE = G.GAME.chips
+			print(SCORE / 100)
+			card.ability.extra.mult = (SCORE / 100)
+			return {
+				mult = card.ability.extra.mult
+			}
+		end
+	end
+}
 
 
 
