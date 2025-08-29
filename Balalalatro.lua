@@ -84,11 +84,35 @@ SMODS.Atlas {
 	py = 95
 }
 SMODS.Atlas {
+	key = "BigCards",
+	path = {
+		['default'] = 'bigcards.png'
+	},
+	px = 461,
+	py = 669
+}
+SMODS.Atlas {
 	key = "Wide",
 	path = {
 		['default'] = 'Wide.png'
 	},
 	px = 142,
+	py = 95
+}
+SMODS.Atlas {
+	key = "Bad_Apple",
+	path = {
+		['default'] = 'bad_apple_ohmylord.png'
+	},
+	px = 71,
+	py = 95
+}
+SMODS.Atlas {
+	key = "calendar",
+	path = {
+		['default'] = 'calender.png'
+	},
+	px = 71,
 	py = 95
 }
 SMODS.Atlas {
@@ -105,6 +129,16 @@ SMODS.Atlas({
 	px = 32,
 	py = 32
 })
+
+logo = "balatro.png"
+
+SMODS.Atlas {
+	key = "balatro",
+	path = logo,
+	px = 1000,
+	py = 216,
+	prefix_config = { key = false }
+}
 
 -- Why I have to define this I have no clue!
 SMODS.current_mod.optional_features = {
@@ -217,7 +251,16 @@ SMODS.Edition {
 -- SMODS.change_play_limit(1)
 
 
-
+local card_click_ref = Card.click
+function Card:click()
+	card_click_ref(self)
+	if self.area and self.area == G.jokers then
+		SMODS.calculate_context({
+			rend_clicked = true,
+			card_clicked = self
+		})
+	end
+end
 
 
 
@@ -418,12 +461,11 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Astral Joker',
 		text = {
-			"Retriggers all {E:2,C:attention}Jokers{} twice",
-			"but permanently doubles the {E:2,C:red}Winning Ante{}"
+			"Retriggers all {E:2,C:attention}Jokers{} twice"
 		}
 	},
 
-	rarity = 1,
+	rarity = 3,
 	atlas = 'Jokers',
 	pos = { x = 5, y = 0 },
 	cost = 5,
@@ -434,16 +476,10 @@ SMODS.Joker {
 		return { vars = { card.ability.extra.x_mult } }
 	end,
 	calculate = function(self, card, context)
-
 		if context.retrigger_joker_check then
 			return {
 				repetitions = 2
 			}
-		end
-	end,
-	add_to_deck = function(self, card, from_debuff)
-		if G.GAME.win_ante then
-			G.GAME.win_ante = G.GAME.win_ante + 8
 		end
 	end
 }
@@ -722,22 +758,7 @@ SMODS.Joker {
 
 }
 
---SMODS.Joker {
---	key = 'blank',
---	loc_txt = {
---		name = '',
---		text = {
---			"",
---			"",
---			""
---		},
---	},
---
---	rarity = 1,
---	atlas = 'Jokers',
---	pos = { x = 10, y = 10 },
---	cost = 0,
---}
+
 
 
 
@@ -1530,35 +1551,341 @@ SMODS.Joker {
 	loc_txt = {
 		name = 'Plush Joker',
 		text = {
-			"This Joker's {C:mult}Mult{} becomes",
-			"1/100th of The {C:attention}Final Score",
-			"{C:inactive}(Currently {C:mult}+#1#{} Mult)"
+			"{C:inactive}*Smells like Milk and Physical Abuse*{}",
+			"{C:red,s:1.1}+#1#{} Mult",
 		}
 	},
-	rarity = 4,
+	rarity = 1,
 	atlas = 'Plush',
 	pos = { x = 1, y = 0 },
 	soul_pos = { x = 0, y = 0 },
 	cost = 30,
 	blueprint_compat = true,
 
-	config = { extra = { mult = 4, size = 3 } },
+	config = { extra = { mult = 4.1 }, },
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.mult, card.ability.extra.size } }
+		return { vars = { card.ability.extra.mult } }
 	end,
 	calculate = function(self, card, context)
-		if context.after then
-			local SCORE = G.GAME.chips
-			print(SCORE / 100)
-			card.ability.extra.mult = (SCORE / 100)
+		if context.joker_main then
 			return {
 				mult = card.ability.extra.mult
 			}
 		end
 	end
 }
+SMODS.Joker {
+	key = 'bad_apple',
+	loc_txt = {
+		name = 'Bad Apple',
+		text = {
+			"{C:green}1 in 10{} chance to",
+			"invert your jokers",
+			"at end of round"
+		}
+	},
+	rarity = 2,
+	atlas = 'Bad_Apple',
+	pos = { x = 0, y = 0 },
+	cost = 30,
+	blueprint_compat = true,
+
+	config = {
+		extra = {
+			FPS = 12,
+			delay = 0,
+			frame = 0,
+			total_columns = 40,
+			last_row_columns = 6,
+			total_rows = 74,
+			max_frame = (40 * 73) + 6,
+			frame_time = 60 / 12
+		}
+	},
+
+	update = function(self, card, dt)
+		local extra = card.ability.extra
+		extra.delay = extra.delay + 1
+
+		if extra.delay >= extra.frame_time then
+			extra.frame = (extra.frame + 1) % extra.max_frame
+
+			local x = extra.frame % extra.total_columns
+			local y = math.floor(extra.frame / extra.total_columns)
+
+			card.children.center:set_sprite_pos({x = x, y = y})
+			extra.delay = 0
+		end
+	end,
+
+	calculate = function(self, card, context)
+		if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
+			local randomnum = pseudorandom("this_really_was_a_bad_apple", 1, 10)
+			if randomnum == 1 then
+				if G.jokers then
+					for i = 1, #G.jokers.cards do
+						local joker = G.jokers.cards[i]
+						if joker.edition then
+							if joker.edition.key == "e_negative" then
+								joker:set_edition(nil, true)
+							end
+						else
+							joker:set_edition("e_negative", true)
+						end
+						joker:juice_up(0.3, 0.5)
+					end
+
+				else
+					play_sound('balalalatro_boom', 1, 0.55)
+				end
+			end
+		end
+
+	end
+}
+
+SMODS.Joker {
+	key = 'Calendar',
+	loc_txt = {
+		name = 'calendar',
+		text = {
+			"Adds the Date to Mult",
+			"{C:inactive}(Currently {C:mult}#1#{C:inactive} Mult)"
+		}
+	},
+	rarity = 1,
+	atlas = 'calendar',
+	pos = { x = 0, y = 0 },
+	cost = 30,
+	blueprint_compat = true,
+	pixel_size = { h = 65 },
+
+	config = {
+		extra = {
+			total_columns = 16,
+			total_rows = 2,
+			max_frame = 31,
+
+			mult = 0
+		}
+	},
+
+	update = function(self, card, dt)
+		local extra = card.ability.extra
+
+		local day = tonumber(os.date("%d"))
+
+		local frame = math.min(day, extra.max_frame) - 1
+
+		local x = frame % extra.total_columns
+		local y = math.floor(frame / extra.total_columns)
+
+		card.ability.extra.mult = tonumber(os.date("%d"))
+		card.children.center:set_sprite_pos({x = x, y = y})
+	end,
+
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.mult } }
+	end,
+
+	calculate = function(self, card, context)
+		if context.joker_main then
+			return {
+				mult = card.ability.extra.mult,
+			}
+		end
+	end
+
+}
+
+SMODS.Joker {
+	key = 'blank',
+	loc_txt = {
+		name = '    ',
+		text = {
+			" ",
+			" ",
+			" ",
+			" ",
+			" "
+		},
+	},
+
+	rarity = 1,
+	atlas = 'Jokers',
+	pos = { x = 17, y = 0 },
+	cost = 0,
+	calculate = function(self, card, context)
+		if context.selling_self then
+			return {
+				message = "Really?",
+				delay = 6,
+				extra = {
+					message = "Just like that?",
+					delay = 8,
+					extra = {
+						message = "I don't meet your expectations so you just throw me away??",
+						delay = 12,
+						extra = {
+							message = "What is wrong with people these days...",
+							delay = 9,
+							extra = {
+								message = "...",
+								delay = 6,
+								extra = {
+									message = "You think I'm done with you?",
+									delay = 8,
+									extra = {
+										message = "You're damn wrong!",
+										delay = 6,
+										extra = {
+											message = "I will make sure you live the rest of your sad life with guilt.",
+											delay = 12,
+											extra = {
+												message = "I WILL make you regret selling me.",
+												delay = 12,
+												func = function()
+													G.E_MANAGER:add_event(Event({
+														func = function()
+															SMODS.add_card {key = 'j_balalalatro_blank', edition = card.edition, stickers = { 'eternal','pinned' } }
+															return true
+														end
+													}))
+												end
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		end
+	end
+}
+
+SMODS.Joker {
+	key = 'moai',
+	loc_txt = {
+		name = 'Moai',
+		text = {
+			"Played Stone Cards give",
+			"{X:mult,C:white} X#1# {} Mult when scored"
+		},
+	},
+	rarity = 1,
+	atlas = 'Jokers',
+	pos = { x = 2, y = 10 },
+	cost = 4,
+	blueprint_compat = true,
+
+	config = { extra = { Xmult = 1.5 } },
+	loc_vars = function(self, info_queue, card)
+		info_queue[#info_queue + 1] = G.P_CENTERS.m_stone
+
+		return { vars = { card.ability.extra.Xmult } }
+	end,
+	calculate = function(self, card, context)
+		if context.individual and context.cardarea == G.play and SMODS.has_enhancement(context.other_card, 'm_stone')  then
+			play_sound('balalalatro_boom', 1, 0.55)
+			return {
+				xmult = card.ability.extra.Xmult
+			}
+		end
 
 
+
+		if context.rend_clicked and context.card_clicked == card then
+			play_sound('balalalatro_boom', 1, 0.55)
+		end
+	end
+}
+
+SMODS.Joker {
+	key = 'job',
+	loc_txt = {
+		name = 'J*b Application',
+		text = {
+			"{X:mult,C:white} X2 {} Mult for each day",
+			"you don't play {S:1.1,C:red,E:1}Balatro{}."
+		},
+	},
+
+	rarity = 1,
+	atlas = 'BigCards',
+	pos = { x = 1, y = 0 },
+	cost = 4,
+	calculate = function(self, card, context)
+		--		did you expect me to actually code this?
+	end
+}
+SMODS.Joker {
+	key = 'loss',
+	loc_txt = {
+		name = 'Loss',
+		text = {
+			"Loss"
+		},
+	},
+
+	rarity = 1,
+	atlas = 'BigCards',
+	pos = { x = 2, y = 0 },
+	cost = 4,
+	calculate = function(self, card, context)
+		if context.rend_clicked and context.card_clicked == card then
+			play_sound('balalalatro_boom', 1, 0.55)
+		end
+	end
+
+}
+
+SMODS.Joker {
+	key = 'shrimp',
+	loc_txt = {
+		name = 'Shrimp Fried Rice',
+		text = {
+			"{s:0.80}You're telling me a shrimp fried this rice?",
+			"{s:0.79}I'm sorry, but I have to ask you to repeat what you just said.",
+			"{s:0.78}Did I hear you correctly?",
+			"{s:0.77}Did you really say what I think you said?",
+			"{s:0.76}Are you seriously trying to convince me that this dish of rice was prepared by a shrimp?",
+			"{s:0.75}A shrimp, as in a small, aquatic crustacean with a shell and antennae?",
+			"{s:0.74}A shrimp, as in an animal that lives in the ocean and feeds on plankton and algae?",
+			"{s:0.73}A shrimp, as in a creature that has no hands, no fingers, no opposable thumbs, and no ability to manipulate tools or fire?",
+
+			"{s:0.72}How do you expect me to believe such a preposterous claim?",
+			"{s:0.71}How do you explain the logistics of this miraculous feat?",
+			"{s:0.70}How did this shrimp obtain some rice in the first place?",
+			"{s:0.69}Did it swim to the nearest supermarket and buy some with its nonexistent money?",
+			"{s:0.68}Did it raid a farmer's field and steal some with its nonexistent stealth?",
+			"{s:0.67}Did it grow some itself with its nonexistent farming skills?",
+
+			"{s:0.66}And how did this shrimp fry the rice once it had it?",
+			"{s:0.65}Did it find some oil and seasonings lying around somewhere and use them with its nonexistent culinary knowledge?",
+			"{s:0.64}Did it borrow some from a friendly neighbor with its nonexistent social skills?",
+			"{s:0.63}Did it make some from scratch with its nonexistent chemistry skills?",
+			"{s:0.62}And where did it get the heat source to cook the rice?",
+			"{s:0.61}Did it use a stove or a microwave with its nonexistent electricity access?",
+			"{s:0.60}Did it start a fire with its nonexistent matches or lighter?",
+			"{s:0.59}Did it use its own body heat with its nonexistent thermoregulation ability?",
+
+			"{s:0.58}And how did this shrimp manage to cook the rice so well that it looks and tastes delicious?",
+			"{s:0.57}How did it know how much water to add, how long to cook, how often to stir, how much salt or pepper or soy sauce or whatever else to use?",
+			"{s:0.56}How did it avoid burning or undercooking or overseasoning or spilling or dropping anything along the way?",
+			"{s:0.55}How did it plate the rice so nicely and garnish it so elegantly that it looks like something out of a gourmet restaurant menu?",
+			"{s:0.54}You're telling me a shrimp fried this rice?",
+		},
+	},
+
+	rarity = 1,
+	atlas = 'BigCards',
+	pos = { x = 3, y = 0 },
+	cost = 4,
+	calculate = function(self, card, context)
+	end
+}
 
 SMODS.Atlas {
 	key = "wipbanana",
@@ -1599,7 +1926,19 @@ SMODS.Suit {
 
 
 
-
+SMODS.Back {
+	key = 'astral',
+	loc_txt = {
+		name = 'Astral',
+		text = {
+			"A Random {C:attention}card{} in your",
+			"{C:attention}full deck{} will turn",
+			"into a {C:attention}Goop'ed{} card",
+		}
+	},
+	atlas = 'Jokers',
+	pos = { x = 2, y = 13 }
+}
 
 
 

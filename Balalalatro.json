@@ -1,6 +1,8 @@
 {
     "id": "Balalalatro",
     "name": "Balalalatro",
+    "display_name": "Balalalatro",
+
     "author": ["Astral"],
     "description": "Adds Whatever I Want.",
     "prefix": "balalalatro",
